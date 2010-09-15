@@ -56,7 +56,7 @@ each part must have a standard structure to allow integration between all the pa
     http.createServer(function (req, res)
     {
      var shared={ 'req':req, 'res':res , 'app':app, 'libs':app.libs }; // an object which hold all the variables related to a specific request.
-     if(req.url.indexOf("surprise"))
+     if(req.url.indexOf("surprise")!=-1)
       app.libs.inflow.flow(shared,[      [surprise,["it can have arguments"]]      , render ]);
      else
       app.libs.inflow.flow(shared,[ helloworld , render ]);
@@ -64,3 +64,8 @@ each part must have a standard structure to allow integration between all the pa
     
     console.log('Server running at http://127.0.0.1:8124/');
 
+## methods:
+
+###  function flow(shared,steps[,debug])
+ 
+###  function paralel(shared,steps,callback[,debug])
