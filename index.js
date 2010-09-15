@@ -3,32 +3,36 @@
 // 1 next callback did not called.
 // 2 next callback called too mutch / too soon / callback split /  double call to same next(), so the final function called when the work is not done yet. 
 
-var report_uncalled_callbeck_after= 1500 ;// ms
-/*
-function callback_timeout_error()
+var report_uncalled_callbeck_after= 1500 ;// ms , set to 0 to disable
+
+function debug_trace(message)
 {
- try{ throw (new Error('Trace: node-inflow, callback did not called at step '+currentstep)); }
+ try{ throw (new Error('Trace: node-inflow,'+message)); }
  catch(e){var stack=e.stack;}
  console.log(stack);
 }
-   */                     
+                     
 // one simple function 
-function flow(shared,steps,currentstep)
+function flow(shared,steps,debug,currentstep)
 {
- var timeout=false;//timeout is for debugging:
+ if(arguments.length==2) debug = false;
  if(!currentstep) currentstep=0;
+ if(debug){ if(steps.timeout) clearTimeout(steps.timeout);  }
  if(currentstep>=steps.length)
  {
-   if(timeout) clearTimeout(timeout);
    return;
  }
- 
+ if(debug)  debug_trace(currentstep);
+
  if(typeof steps[currentstep]==='object' && steps[currentstep] instanceof  Array)
  {
-  var next= function(){ flow(shared,steps,currentstep+1);
-                        //some code for debugging:
-    //                    if(report_uncalled_callbeck_after!=0)
-  //                       timeout=setTimeout(callback_timeout_error, report_uncalled_callbeck_after );
+  var next= function(){ flow(shared,steps,debug,currentstep+1);
+                        if(debug) {
+                         if(this.called) debug_trace(' called more then once ');
+                         this.called=true;
+                         if(report_uncalled_callbeck_after!=0)
+                          steps.timeout=setTimeout(function () {debug_trace('callback did not called at step: '+currentstep);}, report_uncalled_callbeck_after );
+                        }
                       };
   next.next=next;
   next.shared=shared;
@@ -38,7 +42,14 @@ function flow(shared,steps,currentstep)
  }
  else
  {
-  var next= function(){ flow(shared,steps,currentstep+1);};
+  var next= function(){ flow(shared,steps,debug,currentstep+1);
+                        if(debug) {
+                         if(this.called) debug_trace(' called more then once ');
+                         this.called=true;
+                         if(report_uncalled_callbeck_after!=0)
+                          steps.timeout=setTimeout(function () {debug_trace('callback did not called at step: '+currentstep);}, report_uncalled_callbeck_after );
+                        }
+                      };
   next.next=next;
   next.shared=shared;
   next.steps=steps;
@@ -49,30 +60,32 @@ function flow(shared,steps,currentstep)
 } this.flow=flow;
 
 
+// other unfinished perfectionism:
 
-
-// other perfectionism:
-
-
-function paralel(shared,steps,callback)
+function paralel(shared,steps,callback,debug)
 {
  var callbackcount=0;
  var status=[];
  var results=[];
+ var timeout=false;
  function gonext(i,result)
  {
   callback_count++;
   status[i]=true;
   results[i]=result;
   if( callback_count == steps.length )
+  {
    callback(results);
+   if(timeout)clearTimeout(timeout);//of debug
+  }
  }
  for(var i=0;i<steps.length;i++)
  {
-  var next= function(){ gonext(i,result); };
+  var next= function(result){ gonext(i,result); };
   next.next=next;
   next.shared=shared;
   next.steps=steps;
+  next.step=i;
   if(typeof steps[currentstep]==='object' && steps[currentstep] instanceof  Array)
   {
    process.nextTick(function (){
@@ -86,6 +99,11 @@ function paralel(shared,steps,callback)
    });
   }
  } 
+ if(debug)
+ {
+  if(report_uncalled_callbeck_after!=0)
+   timeout=setTimeout(function () {debug_trace(' paralel callback call status: '+status.join(','));}, report_uncalled_callbeck_after );
+ }
 } this.paralel=paralel;
 
 /*
