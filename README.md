@@ -7,6 +7,8 @@
 * functions can have argunets
 * with this library I could reinvented the way I use an http server
 * simplifies the application structure
+* no need to pass req, res as seperate arguments, just one simple shared object
+ 
 
 your application is composed from small parts
 each part must have a standard structure to allow integration between all the parts
