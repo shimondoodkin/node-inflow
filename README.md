@@ -7,7 +7,7 @@
 * the shared object simplifies everything with async calls.
 * functions can have argunets
 * with this library I could reinvented the way I use an http server
-* simplifies the application structure
+* it simplified my  application structure
 * no need to pass req, res as seperate arguments, just one simple shared object
 
 
