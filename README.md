@@ -1,6 +1,7 @@
 # node-inflow
-  a simple "Step" library with a _shared_ object.
-  designed with the user and debugging in mind.
+  a simple "Step" library with a Shared object.
+  designed with the user in mind
+  and debugging in mind.
 
 * no more complicated closures
 * the shared object simplifies everything with async calls.
