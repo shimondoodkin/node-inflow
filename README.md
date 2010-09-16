@@ -16,7 +16,7 @@ each part must have a standard structure to allow integration between all the pa
 ## anatomy of a standart function
     function part(argument1,...)
     {
-     this.next(return_value); // a function to call to as a callback, return value only useful in paralel
+     this.next(return_value); // a function to call to as a callback, the return value only useful in paralel
      this.shared // a shared object between all the calls in a flow
      this.shared.libs //  dependency injection (a shared object that holds all the libraries)
      
