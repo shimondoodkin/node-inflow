@@ -33,7 +33,7 @@ Each function is a part composed from:
 * a function it self 
 * and a next() call as a return value.
 
-## anatomy of a standard function
+## Anatomy of a standard function
     function part(argument1,...)
     {
      this.next(return_value); // a function to call to as a callback, the return value only useful in paralel
