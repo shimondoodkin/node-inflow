@@ -22,8 +22,8 @@ Simply download it:
 
 ##How to use it
     var inflow = require('node-inflow'); // require it
-    inflow.flow(shared_object,[function,nextfunction,[otherfunction,[function_argument]])
-    inflow.paralel(shared_object,[function,nextfunction,[otherfunction,[function_argument]],done_function);
+    inflow.flow(shared_object,[afunction,nextfunction,[otherfunction,[function_argument]])
+    inflow.paralel(shared_object,[afunction,nextfunction,[otherfunction,[function_argument]],done_function);
 
 ## Available inside a function:
     function part(argument1,...)
@@ -37,7 +37,7 @@ Simply download it:
      this.steps; // array of all function (it is posible to push to it a new next step)
      this.flow; // inflow.flow shortcut
      this.paralel; // inflow.paralel shortcut
-     this.args //arguments of previusly called next(arg1,arg2) function
+     this.args //arguments of previusly called next(arg1,arg2) function in sequential flow
      this.results //arguments of all called next(arg1,arg2) functions in paralel
 
      //also you can do:
@@ -102,8 +102,13 @@ Simply download it:
 calls one step function after an other.
 
 also available inside each function:
- this.args //arguments of previusly called next function
+   this.args //arguments of previusly called next function
 
+advanced staff:
+
+you may push a next step into the end of steps array:
+   this.steps.push(some_function);
+   this.steps.push([some_function,[arg1,arg2]]);
 
 ###  function paralel(shared,steps,callback[,debug])
 calls all the steps functions and when all done it calls the callback function.
