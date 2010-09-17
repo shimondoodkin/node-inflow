@@ -25,6 +25,16 @@ Simply download it:
     inflow.flow(shared_object,[afunction,nextfunction,[otherfunction,[function_argument]])
     inflow.paralel(shared_object,[afunction,nextfunction,[otherfunction,[function_argument]],done_function);
 
+We usualy call function from an object, 
+for example in a website we have several pages (objects).
+pages can share functions between them. for example:
+    inflow.flow(shared,
+    [
+     [app.pages.index.checklogin,[{login_reqired:false}]],
+     app.pages.loaduserdata,
+     app.common.rander
+    ])
+
 ## Available inside a function:
     function part(argument1,...)
     {
