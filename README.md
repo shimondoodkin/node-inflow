@@ -18,9 +18,9 @@ Simply download it:
     git clone https://shimondoodkin@github.com/shimondoodkin/node-inflow.git
 
 ## How to use it
-  var inflow = require('node-inflow'); // require it
-  inflow.flow(shared_object,[afunction,nextfunction,[otherfunction,[function_argument]])
-  inflow.paralel(shared_object,[afunction,nextfunction,[otherfunction,[function_argument]],done_function);
+    var inflow = require('node-inflow'); // require it
+    inflow.flow(shared_object,[afunction,nextfunction,[otherfunction,[function_argument]])
+    inflow.paralel(shared_object,[afunction,nextfunction,[otherfunction,[function_argument]],done_function);
 
 We usually call function from an object,
 for example in a website we have several pages (objects).
