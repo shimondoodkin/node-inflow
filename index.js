@@ -13,7 +13,7 @@ function debug_trace(message)
 }
 var self=this;              
 // one simple function 
-function flow(shared,steps,debug,currentstep)
+function flow(shared,steps,debug,currentstep,args)
 {
  if(arguments.length==2) debug = false;
  if(!currentstep) currentstep=0;
@@ -26,7 +26,7 @@ function flow(shared,steps,debug,currentstep)
 
  if(typeof steps[currentstep]==='object' && steps[currentstep] instanceof  Array)
  {
-  var next= function(){ flow(shared,steps,debug,currentstep+1);
+  var next= function(){ flow(shared,steps,debug,currentstep+1,arguments);
                         if(debug) {
                          if(this.called) debug_trace(' called more then once ');
                          this.called=true;
@@ -40,11 +40,12 @@ function flow(shared,steps,debug,currentstep)
   next.step=currentstep;
   next.flow=self.flow;
   next.paralel=self.paralel;
+  next.args=args;
   steps[currentstep][0].apply( next,steps[currentstep][1]);
  }
  else
  {
-  var next= function(){ flow(shared,steps,debug,currentstep+1);
+  var next= function(){ flow(shared,steps,debug,currentstep+1,arguments);
                         if(debug) {
                          if(this.called) debug_trace(' called more then once ');
                          this.called=true;
@@ -58,7 +59,11 @@ function flow(shared,steps,debug,currentstep)
   next.step=currentstep;
   next.flow=self.flow;
   next.paralel=self.paralel;
-  steps[currentstep].call( next );
+  next.args=args;
+  if(typeof args==='object' && args instanceof  Array)
+   steps[currentstep].apply( next , args);
+  else
+   steps[currentstep].call( next );
  }
 
 } this.flow=flow;
@@ -95,7 +100,12 @@ function paralel(shared,steps,callback,debug)
    next.step=i;
    next.flow=self.flow;
    next.paralel=self.paralel;
-   callback.call(next,results);
+   next.results=results;
+   if(typeof steps[currentstep]==='object' && steps[currentstep] instanceof  Array)
+    callback[0].apply(next, callback[1]);
+   else
+    callback.call(next,results);
+
    if(timeout)clearTimeout(timeout);//of debug
   }
  }
@@ -108,6 +118,8 @@ function paralel(shared,steps,callback,debug)
   next.step=i;
   next.flow=self.flow;
   next.paralel=self.paralel;
+  next.args=[];
+
   if(typeof steps[currentstep]==='object' && steps[currentstep] instanceof  Array)
   {
    process.nextTick(function (){

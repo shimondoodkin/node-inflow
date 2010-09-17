@@ -25,16 +25,10 @@ Simply download it:
     inflow.flow(shared_object,[function,nextfunction,[otherfunction,[function_argument]])
     inflow.paralel(shared_object,[function,nextfunction,[otherfunction,[function_argument]],done_function);
 
-## Idea
-Your application is composed from small parts
-To allow integration between all the parts.
-Each part must have a standard structure.
-Each function is a part composed from: a function it self and a next() call as a return value.
-
-## Anatomy of a standard function
+## Available inside a function:
     function part(argument1,...)
     {
-     this.next(return_value); // a function to call to as a callback, the return value only useful in paralel
+     this.next(return_value); // a function to call at the end of the part;
      this.shared // a shared object between all the calls in a flow
      this.shared.libs //  dependency injection (a shared object that holds all the libraries)
      
@@ -43,6 +37,9 @@ Each function is a part composed from: a function it self and a next() call as a
      this.steps; // array of all function (it is posible to push to it a new next step)
      this.flow; // inflow.flow shortcut
      this.paralel; // inflow.paralel shortcut
+     this.args //arguments of previusly called next(arg1,arg2) function
+     this.results //arguments of all called next(arg1,arg2) functions in paralel
+
      //also you can do:
      this(); or this.next(); //thouse are the same.
     };
@@ -104,17 +101,32 @@ Each function is a part composed from: a function it self and a next() call as a
 ###  function flow(shared,steps[,debug])
 calls one step function after an other.
 
+also available inside each function:
+ this.args //arguments of previusly called next function
+
+
 ###  function paralel(shared,steps,callback[,debug])
 calls all the steps functions and when all done it calls the callback function.
     process.nextTick(function (){ afunction.call(thisobject,arguments_if_any);});
 
+also available inside the callback function:
+    this.results // array of all next arguments
 
 
 
-##thanks to:
+
+
+##Thanks to:
 
 Creationix - I used his concept for this library.
 
 Stagas - For help in enhancing examples in this readme.
 
+
+## Idea
+The intended day to day usage is as described above in How to use.
+Unintentionly it is generalized into fubjs thing: 
+Your application is composed from small parts To allow integration between all the parts.
+Each part must have a standard structure.
+Each function is a part composed from: a function it self and a next() call as a return value.
 
