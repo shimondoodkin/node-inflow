@@ -1,5 +1,3 @@
-A next generation async control-flow library, with a shared object for called functions and debugging made easy.
-
 # node-inflow
 A next generation async control-flow library,
 with a shared object for called functions
