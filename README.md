@@ -109,9 +109,9 @@ pages can share functions between them. for example:
 
 ### function flow(shared,steps[,debug])
 
-calls one step function after an other.
+calls each step functions one after an other.
 
-also available inside each function:
+also available inside the called function:
     this.args //arguments of previusly called next function
 
 (advanced staff:) you may push a next step into the end of steps array:
