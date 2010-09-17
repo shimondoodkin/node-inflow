@@ -27,7 +27,7 @@ Simply download it:
 ## How to use it
     var inflow = require('node-inflow'); // require it
     inflow.flow(shared_object,[afunction,nextfunction,[otherfunction,[function_argument]])
-    inflow.paralel(shared_object,[afunction,nextfunction,[otherfunction,[function_argument]],done_function);
+    inflow.parallel(shared_object,[afunction,nextfunction,[otherfunction,[function_argument]],done_function);
 
 We usually call function from an object,
 for example in a website we have several pages (objects).
@@ -52,9 +52,9 @@ pages can share functions between them. for example:
      this.shared.app // also you can give access to other global shared objects
      this.steps; // array of all function (it is possible to push to it a new next step)
      this.flow; // inflow.flow shortcut
-     this.paralel; // inflow.paralel shortcut
+     this.parallel; // inflow.parallel shortcut
      this.args //arguments of previously called next(arg1,arg2) function in sequential flow
-     this.results //arguments of all called next(arg1,arg2) functions in paralel
+     this.results //arguments of all called next(arg1,arg2) functions in parallel
      
      //also you can do:
      this(); or this.next(); //those are the same.
@@ -125,7 +125,7 @@ also available inside the called function:
     this.steps.push(some_function);
     this.steps.push([some_function,[arg1,arg2]]); // with arguments
 
-###function paralel(shared,steps,callback[,debug])
+###function parallel(shared,steps,callback[,debug])
 
 calls all the steps functions and when all done it calls the callback function.
     process.nextTick(function (){ afunction.call(thisobject,arguments_if_any);});

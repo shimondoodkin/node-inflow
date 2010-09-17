@@ -39,7 +39,7 @@ function flow(shared,steps,debug,currentstep,args)
   next.steps=steps;
   next.step=currentstep;
   next.flow=self.flow;
-  next.paralel=self.paralel;
+  next.parallel=self.parallel;
   next.args=args;
   steps[currentstep][0].apply( next,steps[currentstep][1]);
  }
@@ -58,7 +58,7 @@ function flow(shared,steps,debug,currentstep,args)
   next.steps=steps;
   next.step=currentstep;
   next.flow=self.flow;
-  next.paralel=self.paralel;
+  next.parallel=self.parallel;
   next.args=args;
   if(typeof args==='object' && args instanceof  Array)
    steps[currentstep].apply( next , args);
@@ -71,7 +71,7 @@ function flow(shared,steps,debug,currentstep,args)
 
 // other unfinished perfectionism:
 
-function paralel(shared,steps,callback,debug)
+function parallel(shared,steps,callback,debug)
 {
  var callbackcount=0;
  var status=[];
@@ -99,7 +99,7 @@ function paralel(shared,steps,callback,debug)
    next.steps=steps;
    next.step=i;
    next.flow=self.flow;
-   next.paralel=self.paralel;
+   next.parallel=self.parallel;
    next.results=results;
    if(typeof steps[currentstep]==='object' && steps[currentstep] instanceof  Array)
     callback[0].apply(next, callback[1]);
@@ -117,7 +117,7 @@ function paralel(shared,steps,callback,debug)
   next.steps=steps;
   next.step=i;
   next.flow=self.flow;
-  next.paralel=self.paralel;
+  next.parallel=self.parallel;
   next.args=[];
 
   if(typeof steps[currentstep]==='object' && steps[currentstep] instanceof  Array)
@@ -136,9 +136,9 @@ function paralel(shared,steps,callback,debug)
  if(debug)
  {
   if(report_uncalled_callbeck_after!=0)
-   timeout=setTimeout(function () {debug_trace(' paralel callback call status: '+status.join(','));}, report_uncalled_callbeck_after );
+   timeout=setTimeout(function () {debug_trace(' parallel callback call status: '+status.join(','));}, report_uncalled_callbeck_after );
  }
-} this.paralel=paralel;
+} this.parallel=parallel;
 
 /*
 
@@ -165,7 +165,7 @@ function callflow(newthis,shared,steps,currentstep)
 } this.callflow=callflow;
 
 
-function callparalel(newthis,shared,steps,callback)
+function callparallel(newthis,shared,steps,callback)
 {
  var callbackcount=0;
  var status=[];
@@ -198,6 +198,6 @@ function callparalel(newthis,shared,steps,callback)
    });
   }
  }
-} this.callparalel=callparalel;
+} this.callparallel=callparallel;
 
 */
