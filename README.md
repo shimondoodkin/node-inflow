@@ -135,8 +135,12 @@ Stagas - For help in enhancing examples in this readme.
 
 The intended day to day usage is as described above in How to use.
 Unintentionly it is generalized into fubjs thing:
+
 Your application is composed from small parts To allow integration between all the parts.
 Each part must have a standard structure.
+
 Each function is a part composed from: 
+
  a function it self and
+
  a next() call as a return value.
