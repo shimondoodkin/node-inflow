@@ -40,7 +40,8 @@ your application is composed from small parts each part must have a standard str
      //and also:
      this.shared.app // also you can give access to other global shared objects
      this.steps; // array of all function (it is posible to push to it a new next step)
-     this.step; // current step (for information);
+     this.flow; // inflow.flow shortcut
+     this.paralel; // inflow.paralel shortcut
      //also you can do:
      this(); or this.next(); //thouse are the same.
     };

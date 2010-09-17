@@ -11,7 +11,7 @@ function debug_trace(message)
  catch(e){var stack=e.stack;}
  console.log(stack);
 }
-                     
+var self=this;              
 // one simple function 
 function flow(shared,steps,debug,currentstep)
 {
@@ -38,6 +38,8 @@ function flow(shared,steps,debug,currentstep)
   next.shared=shared;
   next.steps=steps;
   next.step=currentstep;
+  next.flow=self.flow;
+  next.paralel=self.paralel;
   steps[currentstep][0].apply( next,steps[currentstep][1]);
  }
  else
@@ -54,6 +56,8 @@ function flow(shared,steps,debug,currentstep)
   next.shared=shared;
   next.steps=steps;
   next.step=currentstep;
+  next.flow=self.flow;
+  next.paralel=self.paralel;
   steps[currentstep].call( next );
  }
 
@@ -86,6 +90,8 @@ function paralel(shared,steps,callback,debug)
   next.shared=shared;
   next.steps=steps;
   next.step=i;
+  next.flow=self.flow;
+  next.paralel=self.paralel;
   if(typeof steps[currentstep]==='object' && steps[currentstep] instanceof  Array)
   {
    process.nextTick(function (){
