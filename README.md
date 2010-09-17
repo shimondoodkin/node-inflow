@@ -54,56 +54,57 @@ pages can share functions between them. for example:
     };
     
 ## Example:
+  
+    var http = require('http');
+    var app={libs:{}};
+    var app.libs.inflow = require('node-inflow');
+    var inflow = app.libs.inflow.flow; // optional
+    var inparallel = app.libs.inflow.parallel; // optional
+    
+    http.createServer(function (req, res)  {
+     var shared = { 
+                          'req':req, 
+                          'res':res, 
+                          'app':app, 
+                          'libs':app.libs
+                  };
+    
+     if(req.url.indexOf("surprise")!=-1)
+       inflow(shared,[
+                      [surprise, ["it can have arguments"]]
+                     ,
+                      render
+                     ]);
+     else
+       inflow(shared, [ helloworld , render ]);
+    
+    }).listen(8124);
+    
+    function helloworld() {
+      this.shared.text_to_show='Hello World!';
+      this.next();
+    };
+    
+    function render()  {
+      with(this.shared) // you can use it with a with statement   
+         res.writeHead(200, {'Content-Type': 'text/plain'}), 
+         res.end(this.shared.text_to_show);     
+      this.next();
+    };
+    
+    function surprise(name) {
+     var shared=this.shared; var req=shared.req; // you can use it with some shortcut varibales 
+     if(!app.libs.fs)app.libs.fs=require('fs'); // dependency injection, here just for the sake of loading something
+     shared.text_to_show='Surprise ' + name ;
+    
+     var self=this; // save the this for later usage.
+     setTimeout(function() {
+      self.next();
+     } , Math.ceil(Math.random()*5)*1000 ) ;
+    };
+    
+    console.log('Server running at http://127.0.0.1:8124/');
 
-  var http = require('http');
-  var app={libs:{}};
-  var app.libs.inflow = require('node-inflow');
-  var inflow = app.libs.inflow.flow; // optional
-  var inparallel = app.libs.inflow.parallel; // optional
-  
-  http.createServer(function (req, res)  {
-   var shared = { 
-                        'req':req, 
-                        'res':res, 
-                        'app':app, 
-                        'libs':app.libs
-                };
-  
-   if(req.url.indexOf("surprise")!=-1)
-     inflow(shared,[
-                    [surprise, ["it can have arguments"]]
-                   ,
-                    render
-                   ]);
-   else
-     inflow(shared, [ helloworld , render ]);
-  
-  }).listen(8124);
-  
-  function helloworld() {
-    this.shared.text_to_show='Hello World!';
-    this.next();
-  };
-  
-  function render()  {
-    with(this.shared) // you can use it with a with statement   
-       res.writeHead(200, {'Content-Type': 'text/plain'}), 
-       res.end(this.shared.text_to_show);     
-    this.next();
-  };
-  
-  function surprise(name) {
-   var shared=this.shared; var req=shared.req; // you can use it with some shortcut varibales 
-   if(!app.libs.fs)app.libs.fs=require('fs'); // dependency injection, here just for the sake of loading something
-   shared.text_to_show='Surprise ' + name ;
-  
-   var self=this; // save the this for later usage.
-   setTimeout(function() {
-    self.next();
-   } , Math.ceil(Math.random()*5)*1000 ) ;
-  };
-  
-  console.log('Server running at http://127.0.0.1:8124/');
 ## Methods:
 
 ### function flow(shared,steps[,debug])
