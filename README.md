@@ -29,9 +29,7 @@ Simply download it:
 Your application is composed from small parts
 To allow integration between all the parts.
 Each part must have a standard structure.
-Each function is a part composed from:
-* a function it self 
-* and a next() call as a return value.
+Each function is a part composed from: a function it self and a next() call as a return value.
 
 ## Anatomy of a standard function
     function part(argument1,...)
