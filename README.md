@@ -46,7 +46,7 @@ pages can share functions between them. for example:
     {
      this.next(return_value); // a function to call at the end of the part;
      this.shared // a shared object between all the calls in a flow
-     this.shared.libs //  dependency injection (a shared object that holds all the libraries)
+     this.shared.libs // idea how to do dependency injection (a shared object that holds all the libraries)
      
      //and also:
      this.shared.app // also you can give access to other global shared objects
