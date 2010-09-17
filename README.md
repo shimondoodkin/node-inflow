@@ -4,14 +4,18 @@ A next generation async control-flow library, with a shared object for called fu
 Designed with user in mind and debugging in mind.
 
 ## Why use it
-* No more complicated closures
+
+No more complicated closures
 * The shared object simplifies everything with async calls.
-* Functions can have arguments
-* With this library I could reinvented the way I use an http server
+
+Functions can have arguments
+* Now I can use a common library object that contains useful function that can be called asynchronously.
 * It simplified my application structure
+
+With this library I could reinvented the way I use an http server
 * No need to pass req, res as separate arguments, just one simple shared object.
 * I used to store temporary variables of the request in the req object but now i store them in the shared object.
-* Now I can use a common library object that contains useful function that can be called asynchronously.
+
 
 ## How to install
 Simply download it:
