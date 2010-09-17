@@ -1,34 +1,34 @@
-# node-inflow
+# Node-Inflow
 A next generation async control-flow library,
 with a shared object for called functions
 and debugging made easy.
   
-designed with usege in mind
+Designed with user in mind
 and debugging in mind.
 
-## why use it
-* no more complicated closures
-* the shared object simplifies everything with async calls.
-* functions can have argunets
-* with this library I could reinvented the way I use an http server
-* it simplified my  application structure
-* no need to pass req, res as seperate arguments, just one simple shared object.
-* i used to store temporary variables of the request in the req object but now i store them in the shared object.
-* now i use a common library object that contains varius useful function   
+## Why use it
+* No more complicated closures
+* The shared object simplifies everything with async calls.
+* Functions can have argunets
+* With this library I could reinvented the way I use an http server
+* It simplified my  application structure
+* No need to pass req, res as seperate arguments, just one simple shared object.
+* I used to store temporary variables of the request in the req object but now i store them in the shared object.
+* Now I can use a common library object that contains useful function that can be called asychroniusly.
 
-## how to install
+## How to install
 simply download it:
     git clone https://shimondoodkin@github.com/shimondoodkin/node-inflow.git
-
 
 ##How to use it
     var inflow = require('node-inflow'); // require it
     inflow.flow(shared_object,[function,nextfunction,[otherfunction,[function_argument]])
     inflow.paralel(shared_object,[function,nextfunction,[otherfunction,[function_argument]],done_function);
 
-## idea
-each function composed from a function it self and a next() call as a return value.
-your application is composed from small parts each part must have a standard structure to allow integration between all the parts.
+## Idea
+Each function composed from a function it self and a next() call as a return value.
+Your application is composed from small parts each part must have a standard structure to allow integration between all the parts.
+with paralel and asynchronius step flow you can compose any appication structure you like.
 
 ## anatomy of a standard function
     function part(argument1,...)
@@ -47,7 +47,7 @@ your application is composed from small parts each part must have a standard str
     };
 
 
-## example:
+## Example:
     var http = require('http');
     var app={libs:{}};
     var app.libs.inflow = require('node-inflow');
@@ -98,7 +98,7 @@ your application is composed from small parts each part must have a standard str
         
     console.log('Server running at http://127.0.0.1:8124/');
 
-## methods:
+## Methods:
 
 ###  function flow(shared,steps[,debug])
 calls one step function after an other.
@@ -111,6 +111,9 @@ calls all the steps functions and when all done it calls the callback function.
 
 
 ##thanks to:
-Stagas - for help in enhancing examples in this readme.
-Creationix - i used his concept for this library.
+
+Creationix - I used his concept for this library.
+
+Stagas - For help in enhancing examples in this readme.
+
 

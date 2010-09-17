@@ -74,12 +74,28 @@ function paralel(shared,steps,callback,debug)
  var timeout=false;
  function gonext(i,result)
  {
+ 
+  if(status[i])
+  {
+   if(debug)
+    debug_trace(' called more then once ');
+  }
+  else
+   return;
+
   callback_count++;
   status[i]=true;
   results[i]=result;
   if( callback_count == steps.length )
   {
-   callback(results);
+   var next= function(result){ }; // does nothing
+   next.next=next;
+   next.shared=shared;
+   next.steps=steps;
+   next.step=i;
+   next.flow=self.flow;
+   next.paralel=self.paralel;
+   callback.call(next,results);
    if(timeout)clearTimeout(timeout);//of debug
   }
  }
