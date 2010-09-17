@@ -26,7 +26,7 @@ simply download it:
     inflow.paralel(shared_object,[function,nextfunction,[otherfunction,[function_argument]],done_function);
 
 ## Idea
-Each function composed from a function it self and a next() call as a return value.
+Each function is a part composed from a function it self and a next() call as a return value.
 Your application is composed from small parts each part must have a standard structure to allow integration between all the parts.
 with paralel and asynchronius step flow you can compose any appication structure you like.
 
