@@ -17,7 +17,7 @@ and debugging in mind.
 * Now I can use a common library object that contains useful function that can be called asychroniusly.
 
 ## How to install
-simply download it:
+Simply download it:
     git clone https://shimondoodkin@github.com/shimondoodkin/node-inflow.git
 
 ##How to use it
@@ -26,9 +26,12 @@ simply download it:
     inflow.paralel(shared_object,[function,nextfunction,[otherfunction,[function_argument]],done_function);
 
 ## Idea
-Each function is a part composed from a function it self and a next() call as a return value.
-Your application is composed from small parts each part must have a standard structure to allow integration between all the parts.
-with paralel and asynchronius step flow you can compose any appication structure you like.
+Your application is composed from small parts
+To allow integration between all the parts.
+Each part must have a standard structure.
+Each function is a part composed from:
+* a function it self 
+* and a next() call as a return value.
 
 ## anatomy of a standard function
     function part(argument1,...)
