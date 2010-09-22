@@ -149,24 +149,24 @@ also available inside the callback function:
 
 each_function: (as in Array.forEach callback)
 
-  inflow.each(
-  shared,
-  items,
-  function (value,key,array){;this();},
-  callback 
-  [,debug]);
+    inflow.each(
+    shared,
+    items,
+    function (value,key,array){;this();},
+    callback 
+    [,debug]);
   
 example:
 
-  app.inflow.each(shared,[
-   {phone:'111111111234',name:'Simon'},
-   {phone:'222222221234',name:'Avi'}
-  ],function (val){
-   shared.res.write(val.phone+" - "+val.name+"\r\n");
-   this();
-  },function (){
-   shared.res.end('done');
-  });
+    app.inflow.each(shared,[
+     {phone:'111111111234',name:'Simon'},
+     {phone:'222222221234',name:'Avi'}
+    ],function (val){
+     shared.res.write(val.phone+" - "+val.name+"\r\n");
+     this();
+    },function (){
+     shared.res.end('done');
+    });
 
 output:
 
