@@ -132,6 +132,36 @@ calls all the steps functions and when all done it calls the callback function.
 also available inside the callback function:
     this.results // array of all next arguments
 
+###function each(shared,items,each_function,callback [,debug])
+
+each_function: (as in Array.forEach callback)
+  inflow.each(
+  shared,
+  items,
+  function (value,key,array){;this();},
+  callback 
+  [,debug]);
+example:
+  app.inflow.each(shared,[
+   {phone:'111111111234',name:'Simon'},
+   {phone:'222222221234',name:'Avi'}
+  ],function (val){
+   shared.res.write(val.phone+" - "+val.name+"\r\n");
+   this();
+  },function (){
+   shared.res.end('done');
+  });
+
+output:
+   111111111234 - Simon
+   222222221234 - Avi
+   done
+
+calls all the steps functions and when all done it calls the callback function.
+    process.nextTick(function (){ afunction.call(thisobject,arguments_if_any);});
+also available inside the callback function:
+    this.results // array of all next arguments
+
 ##Thanks to:
 
 Creationix - I used his concept for this library.

@@ -3,75 +3,69 @@
 // 1 next callback did not called.
 // 2 next callback called too mutch / too soon / callback split /  double call to same next(), so the final function called when the work is not done yet. 
 
-var report_uncalled_callbeck_after= 1500 ;// ms , set to 0 to disable
+// see cool reference http://github.com/caolan/async/blob/master/test/test-async.js
 
-function debug_trace(message)
+var report_uncalled_callbeck_after=0; //doe not works yet 1500 ;// ms , set to 0 to disable
+
+function debug_trace(message) // i usualy remember to turn debug variable off, it wastes cpu on excaptions
 {
  try{ throw (new Error('Trace: node-inflow,'+message)); }
  catch(e){var stack=e.stack;}
- console.log(stack);
+ return stack;
+ //console.log(stack);
 }
-var self=this;              
+var self=this;
 // one simple function 
-function flow(shared,steps,debug,currentstep,args)
+function flow(shared,steps,debug,   currentstep,args,called)
 {
  if(arguments.length==2) debug = false;
  if(!currentstep) currentstep=0;
- if(debug){ if(steps.timeout) clearTimeout(steps.timeout);  }
+ if(debug){ if(steps.timeout) clearTimeout(steps.timeout); if(!called) called=[]; }
  if(currentstep>=steps.length)
  {
    return;
  }
- if(debug)  debug_trace(currentstep);
+ if(debug)  console.log(debug_trace(currentstep));
 
+ var next = function(){
+                       flow(shared,steps,debug,currentstep+1,arguments,called);
+                       if(debug) {
+                        if(called[currentstep]) console.log(debug_trace(' called more then once '));
+                        called[currentstep]=true;
+                        if(report_uncalled_callbeck_after!=0)
+                        {
+                         var text=debug_trace('callback did not called at step: '+currentstep);
+                         steps.timeout=setTimeout(function () {console.log(text);}, report_uncalled_callbeck_after );
+                        }
+                       }
+                      };
+ next.next=next;
+ next.shared=shared;
+ next.steps=steps;
+ next.step=currentstep;
+ next.flow=self.flow;
+ next.parallel=self.parallel;
+ next.each=self.each;
+ next.args=args;
+ 
  if(typeof steps[currentstep]==='object' && steps[currentstep] instanceof  Array)
  {
-  var next= function(){ flow(shared,steps,debug,currentstep+1,arguments);
-                        if(debug) {
-                         if(this.called) debug_trace(' called more then once ');
-                         this.called=true;
-                         if(report_uncalled_callbeck_after!=0)
-                          steps.timeout=setTimeout(function () {debug_trace('callback did not called at step: '+currentstep);}, report_uncalled_callbeck_after );
-                        }
-                      };
-  next.next=next;
-  next.shared=shared;
-  next.steps=steps;
-  next.step=currentstep;
-  next.flow=self.flow;
-  next.parallel=self.parallel;
-  next.args=args;
   steps[currentstep][0].apply( next,steps[currentstep][1]);
  }
  else
  {
-  var next= function(){ flow(shared,steps,debug,currentstep+1,arguments);
-                        if(debug) {
-                         if(this.called) debug_trace(' called more then once ');
-                         this.called=true;
-                         if(report_uncalled_callbeck_after!=0)
-                          steps.timeout=setTimeout(function () {debug_trace('callback did not called at step: '+currentstep);}, report_uncalled_callbeck_after );
-                        }
-                      };
-  next.next=next;
-  next.shared=shared;
-  next.steps=steps;
-  next.step=currentstep;
-  next.flow=self.flow;
-  next.parallel=self.parallel;
-  next.args=args;
   if(typeof args==='object' && args instanceof  Array)
    steps[currentstep].apply( next , args);
   else
    steps[currentstep].call( next );
  }
-
+ 
 } this.flow=flow;
 
 
 // other unfinished perfectionism:
 
-function parallel(shared,steps,callback,debug)
+function parallel(shared,steps,callback,debug,   currentstep,args)
 {
  var callbackcount=0;
  var status=[];
@@ -83,7 +77,7 @@ function parallel(shared,steps,callback,debug)
   if(status[i])
   {
    if(debug)
-    debug_trace(' called more then once ');
+    console.log(debug_trace(' called more then once '));
   }
   else
    return;
@@ -93,15 +87,16 @@ function parallel(shared,steps,callback,debug)
   results[i]=result;
   if( callback_count == steps.length )
   {
-   var next= function(result){ }; // does nothing
+   var next= function(result){ }; // this inside gonext so this does nothing
    next.next=next;
    next.shared=shared;
    next.steps=steps;
    next.step=i;
    next.flow=self.flow;
    next.parallel=self.parallel;
+   next.each=self.each;
    next.results=results;
-   if(typeof steps[currentstep]==='object' && steps[currentstep] instanceof  Array)
+   if(typeof callback==='object' && callback instanceof  Array)
     callback[0].apply(next, callback[1]);
    else
     callback.call(next,results);
@@ -118,6 +113,7 @@ function parallel(shared,steps,callback,debug)
   next.step=i;
   next.flow=self.flow;
   next.parallel=self.parallel;
+  next.each=self.each;
   next.args=[];
 
   if(typeof steps[currentstep]==='object' && steps[currentstep] instanceof  Array)
@@ -136,9 +132,101 @@ function parallel(shared,steps,callback,debug)
  if(debug)
  {
   if(report_uncalled_callbeck_after!=0)
-   timeout=setTimeout(function () {debug_trace(' parallel callback call status: '+status.join(','));}, report_uncalled_callbeck_after );
+  {
+   var text=debug_trace(' parallel callback call status: '+status.join(','));
+   timeout=setTimeout(function () {consle.log(text)}, report_uncalled_callbeck_after );
+  }
  }
 } this.parallel=parallel;
+
+function each(shared,steps,each_function,callback,debug,   currentstep,args,
+  //results,
+  keys,called,timer)
+{
+
+ if(typeof keys==='undefined')
+ {
+  if(typeof steps[currentstep]==='object' && steps[currentstep] instanceof  Array)
+  {
+   keys=false;
+  }
+  else
+  {
+   keys=Object.keys(steps);
+  }
+ }
+
+ 
+
+ if(arguments.length==4) debug = false;
+ if(!currentstep) currentstep=0;
+ //if(!results) results=[];
+ if(debug){ if(!timer)timer={}; if(!called) called=[]; }
+ 
+ if(currentstep>=steps.length)
+ {
+   if(debug)  console.log(debug_trace("CALLBACK")); 
+   
+   var next= function(result){ }; // does nothing, its a last one
+   next.next=next;
+   next.shared=shared;
+   next.steps=steps;
+   next.step=currentstep;
+   next.flow=self.flow;
+   next.parallel=self.parallel;   
+   next.each=self.each;
+   //next.results=results;
+   if(typeof callback==='object' && callback instanceof  Array)
+    callback[0].apply(next, callback[1]);
+   else
+    callback.call(next);
+   return;
+ }
+ 
+ var key=keys?keys[currentstep]:currentstep;
+ 
+ if(debug)  console.log(debug_trace(key));
+
+
+  var next = function(){
+                        var key=keys?keys[currentstep]:currentstep;
+                        if(timer.timeout) console.log(sys.inspect(timer.timeout)); 
+                        if(timer.timeout) clearTimeout(timer.timeout); 
+                        //results[key]=arguments;// generally unrequired could be done with clousure
+                        each(shared,steps,each_function,callback,debug,   currentstep+1,arguments,
+                        //results,
+                        keys,called,timer);
+                        if(debug) {
+                         if(called[currentstep]) console.log(debug_trace(' called more then once '));
+                         called[currentstep]=true;
+                         if(report_uncalled_callbeck_after!=0)
+                         {
+                          var text=debug_trace('callback did not called at step: '+currentstep);
+                          timer.timeout=setTimeout(function () {console.log(text)}, report_uncalled_callbeck_after );
+                         }
+                        }
+                       };
+  next.next=next;
+  next.shared=shared;
+  next.steps=steps;
+  next.step=currentstep;
+  next.flow=self.flow;
+  next.parallel=self.parallel;
+  next.each=self.each;
+  next.args=args;
+
+  next.keys=keys;
+  next.key=key;
+  next.value=steps[key];  
+  if(typeof each_function==='object' && each_function instanceof  Array)
+   each_function[0].apply(next, callback[1]);
+  else
+   each_function.call(next,next.value,key,steps);
+
+} this.each=each;
+
+// function while
+// function do
 
 /*
 
@@ -194,10 +282,11 @@ function callparallel(newthis,shared,steps,callback)
   else
   {
    process.nextTick(function (){
-    steps[i].call( newthis, next , {} );
+    steps[i].call( newthi/home/rakia/www/nodejs-mongodb-app/deps/node-inflows, next , {} );
    });
   }
  }
 } this.callparallel=callparallel;
 
 */
+
