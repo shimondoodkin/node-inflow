@@ -119,29 +119,45 @@ pages can share functions between them. for example:
 calls each step functions one after an other.
 
 also available inside the called function:
+
     this.args //arguments of previusly called next function
 
 (advanced staff:) you may push a next step into the end of steps array:
+
     this.steps.push(some_function);
     this.steps.push([some_function,[arg1,arg2]]); // with arguments
 
 ###function parallel(shared,steps,callback[,debug])
 
 calls all the steps functions and when all done it calls the callback function.
+
     process.nextTick(function (){ afunction.call(thisobject,arguments_if_any);});
+    
 also available inside the callback function:
+
+    this.results // array of all next arguments
+
+calls all the steps functions and when all done it calls the callback function.
+
+    process.nextTick(function (){ afunction.call(thisobject,arguments_if_any);});
+    
+also available inside the callback function:
+
     this.results // array of all next arguments
 
 ###function each(shared,items,each_function,callback [,debug])
 
 each_function: (as in Array.forEach callback)
+
   inflow.each(
   shared,
   items,
   function (value,key,array){;this();},
   callback 
   [,debug]);
+  
 example:
+
   app.inflow.each(shared,[
    {phone:'111111111234',name:'Simon'},
    {phone:'222222221234',name:'Avi'}
@@ -153,14 +169,10 @@ example:
   });
 
 output:
+
    111111111234 - Simon
    222222221234 - Avi
    done
-
-calls all the steps functions and when all done it calls the callback function.
-    process.nextTick(function (){ afunction.call(thisobject,arguments_if_any);});
-also available inside the callback function:
-    this.results // array of all next arguments
 
 ##Thanks to:
 
