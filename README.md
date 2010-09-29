@@ -5,6 +5,27 @@ Designed with user in mind and debugging in mind.
 
 ## Why use it
 
+The problem is that you have to carray the Request and Response,
+all the way, through the callbcacks and non-callbacks...
+just to be able to do Response.write() and Response.end() at the end.
+all the other simple functions dons't need request and response. 
+
+in a large program you could loose the response variable somewhere,
+while doing the folowing in every single small or large sync or async function call:
+
+   function (error,data,req,res)
+   {
+    (function (error,data,req,ras) 
+    {
+     (function (error,data,req,res)
+     {
+      res.end('finally done');
+     })(error,data,req,res);
+    })(error,data,req,res);
+   }
+   // see if you can spot a typo in the code above.
+
+
 No more complicated closures
 
 * The shared object simplifies everything with async calls.
@@ -22,12 +43,13 @@ With this library I could reinvented the way I use an http server
 
 ## How to install
 Simply download it:
-    git clone https://shimondoodkin@github.com/shimondoodkin/node-inflow.git
+    git clone https://github.com/shimondoodkin/node-inflow.git
 
 ## How to use it
     var inflow = require('node-inflow'); // require it
     inflow.flow(shared_object,[afunction,nextfunction,[otherfunction,[function_argument]])
     inflow.parallel(shared_object,[afunction,nextfunction,[otherfunction,[function_argument]],done_function);
+    inflow.each(shared_object,array_or_object,foreach_function(key,value,array),done_function);
 
 We usually call function from an object,
 for example in a website we have several pages (objects).
@@ -46,15 +68,23 @@ pages can share functions between them. for example:
     {
      this.next(return_value); // a function to call at the end of the part;
      this.shared // a shared object between all the calls in a flow
-     this.shared.libs // idea how to do dependency injection (a shared object that holds all the libraries)
      
      //and also:
+     this.shared.lib // idea how to do dependency injection (a shared object that holds all the libraries)
      this.shared.app // also you can give access to other global shared objects
-     this.steps; // array of all function (it is possible to push to it a new next step)
+     
+     this.steps;  // array of all function (it is possible to push to it a new next step)
+     
      this.flow; // inflow.flow shortcut
      this.parallel; // inflow.parallel shortcut
+     this.each; // inflow.each shortcut
+     
      this.args //arguments of previously called next(arg1,arg2) function in sequential flow
      this.results //arguments of all called next(arg1,arg2) functions in parallel
+     
+     this.key   //availible in a for_each_function, in inflow.each
+     this.value //
+     this.items //
      
      //also you can do:
      this(); or this.next(); //those are the same.
@@ -63,17 +93,17 @@ pages can share functions between them. for example:
 ## Example:
   
     var http = require('http');
-    var app={libs:{}};
-    var app.libs.inflow = require('node-inflow');
-    var inflow = app.libs.inflow.flow; // optional
-    var inparallel = app.libs.inflow.parallel; // optional
+    var app={lib:{}};
+    var app.lib.inflow = require('node-inflow');
+    var inflow = app.lib.inflow.flow; // optional
+    var inparallel = app.lib.inflow.parallel; // optional
     
     http.createServer(function (req, res)  {
      var shared = { 
                           'req':req, 
                           'res':res, 
                           'app':app, 
-                          'libs':app.libs
+                          'lib':app.lib
                   };
     
      if(req.url.indexOf("surprise")!=-1)
@@ -94,20 +124,32 @@ pages can share functions between them. for example:
     
     function render()  {
       with(this.shared) // you can use it with a with statement   
-         res.writeHead(200, {'Content-Type': 'text/plain'}), 
-         res.end(this.shared.text_to_show);     
+      {
+         res.writeHead(200, {'Content-Type': 'text/plain'}); 
+         res.end(this.shared.text_to_show);
+      }
       this.next();
     };
-    
+        
     function surprise(name) {
-     var shared=this.shared; var req=shared.req; // you can use it with some shortcut varibales 
-     if(!app.libs.fs)app.libs.fs=require('fs'); // dependency injection, here just for the sake of loading something
+     //i prefer to define what i will use:
+
+     var shared=this.shared,
+         req=shared.req,
+         app=shared.app;
+     
      shared.text_to_show='Surprise ' + name ;
-    
-     var self=this; // save the this for later usage.
+
+     var self=this; // save the "this" for later usage.
      setTimeout(function() {
       self.next();
      } , Math.ceil(Math.random()*5)*1000 ) ;
+     
+     // dependency injection example: // (it is here just for demonstartion)
+     //
+     //var lib=shared.lib;
+     //if(!lib.fs)lib.fs=require('fs'); 
+     //fs.stat('/tmp/myfile',...);
     };
     
     console.log('Server running at http://127.0.0.1:8124/');
@@ -117,6 +159,11 @@ pages can share functions between them. for example:
 ### function flow(shared,steps[,debug])
 
 calls each step functions one after an other.
+
+the steps variable can contain an array.
+each item in this array can be a function.
+to add arguments to a function.
+an item can contain an array as folows: [a_function, array_of_arrguments] .
 
 also available inside the called function:
 
@@ -174,6 +221,69 @@ output:
     222222221234 - Avi
     done
 
+### how do we use it:
+
+a controllers in our program are objects with functions and a main function.
+node-inflow enabels us to seperate the main function to simple steps.
+
+    var page={
+     load_user:function () { // task 1
+      //
+      var shared=this.shared,app=shared.app,req=shared.req;
+      shared.user=app.models.getone({id:req.parsedurl.query.id});//{name:'someone',...}
+      this();
+     }
+     set_name:function () { // task 2
+      //
+      var shared=this.shared;
+      shared.name=(shared.user.name||"")+' is awsome'
+      this();
+     }
+     
+     mytempalte:app.templates.load('views/atemplate.html'), // some template
+     
+     main:function (shared){ // main function
+      var page=shared.page;
+      var common=shared.app.pages.common;
+      shared.view=page.my_template;
+      app.inflow.flow( shared, [page.load_user, page.set_name, common.render] ); // step though the tasks
+     }
+     
+    }
+    
+    // * our main functions not yet called by node-inflow, node-inflow is fresh, i'll convert to it later
+
+reference functions:
+
+    page.my_template=function (vars,callback)  // app.templates.load('views/atemplate.html')
+    {
+      echo='hello '+vars.name;
+      if(callback)callback(echo);else return echo;
+    },
+     
+    //a simplified function like the function that calls main. (just for reference)
+    app.route = function ()
+    {
+     // if route matches:
+     //{
+     shared.page=matched_page;
+     matched_page.main.call(matched_page,shared,app);
+     //}
+    }
+       
+    common.render = function () {
+     var shared = this.shared;
+     var page = shared.page;
+     var res = shared.res;
+     shared.header = (shared.header ? shared.header : {'Content-Type': 'text/html'});
+     shared.view.call(page, shared, function (echo) {
+      res.writeHead(200, shared.header);
+      res.write(echo);
+      res.end();
+     });
+    };
+    
+    
 ##Thanks to:
 
 Creationix - I used his concept for this library.

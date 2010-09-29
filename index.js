@@ -14,6 +14,8 @@ function debug_trace(message) // i usualy remember to turn debug variable off, i
  return stack;
  //console.log(stack);
 }
+
+
 var self=this;
 // one simple function 
 function flow(shared,steps,debug,   currentstep,args,called)
@@ -143,7 +145,7 @@ function each(shared,steps,each_function,callback,debug,   currentstep,args,
   //results,
   keys,called,timer)
 {
-
+ //console.log(require('sys').inspect(steps));
  if(typeof keys==='undefined')
  {
   if(typeof steps[currentstep]==='object' && steps[currentstep] instanceof  Array)
@@ -152,19 +154,22 @@ function each(shared,steps,each_function,callback,debug,   currentstep,args,
   }
   else
   {
-   keys=Object.keys(steps);
+   keys=[];
+   for(key in steps)
+    if(steps.hasOwnProperty(key))
+     keys.push(key);
   }
  }
 
- 
 
  if(arguments.length==4) debug = false;
  if(!currentstep) currentstep=0;
  //if(!results) results=[];
  if(debug){ if(!timer)timer={}; if(!called) called=[]; }
  
- if(currentstep>=steps.length)
+ if(currentstep>=(keys?keys.length:steps.length))
  {
+   process.nextTick(function(){
    if(debug)  console.log(debug_trace("CALLBACK")); 
    
    var next= function(result){ }; // does nothing, its a last one
@@ -180,8 +185,10 @@ function each(shared,steps,each_function,callback,debug,   currentstep,args,
     callback[0].apply(next, callback[1]);
    else
     callback.call(next);
+   });
    return;
  }
+ 
  
  var key=keys?keys[currentstep]:currentstep;
  
@@ -189,9 +196,10 @@ function each(shared,steps,each_function,callback,debug,   currentstep,args,
 
 
   var next = function(){
+  
+    
                         var key=keys?keys[currentstep]:currentstep;
-                        if(timer.timeout) console.log(sys.inspect(timer.timeout)); 
-                        if(timer.timeout) clearTimeout(timer.timeout); 
+                        if(debug)if(timer.timeout) clearTimeout(timer.timeout); 
                         //results[key]=arguments;// generally unrequired could be done with clousure
                         each(shared,steps,each_function,callback,debug,   currentstep+1,arguments,
                         //results,
