@@ -233,50 +233,50 @@ also you should use **return**, when you call this.continue() or this.break() **
 
 Async While example with break at the begining, probabaly less messy idea:  
 
-   inflow.while({},function(){  
-    if(!( while_condition )) return this.break();
-    
-    // code here
-    if(break_condition    ) return this.break();
-    if(continue_condition ) return this.continue(); // this.continue=this.next, must use **return**, to exit the function;
-    // code here
-
-    this.next();
-   },
-   function(){
-    console.log('// after while code here');
-   });
+    inflow.while({},function(){  
+     if(!( while_condition )) return this.break();
+     
+     // code here
+     if(break_condition    ) return this.break();
+     if(continue_condition ) return this.continue(); // this.continue=this.next, must use **return**, to exit the function;
+     // code here
+ 
+     this.next();
+    },
+    function(){
+     console.log('// after while code here');
+    });
    
 Async Do-While example with break at the begining, probabaly less messy idea:
   
-   inflow.while({},function(){
-    // code here
-    if(!( while_condition )) return this.break();
-    this.next();
-   },
-   function(){
-    console.log('// after while code here');
-   });
+    inflow.while({},function(){
+     // code here
+     if(!( while_condition )) return this.break();
+     this.next();
+    },
+    function(){
+     console.log('// after while code here');
+    });
    
 While example inside a callback:
   
-   inflow.while({},function(){   
-    if(!( while_condition )) return self.break();
-    console.log('// code here');
-    
-    var self=this;
-    setTimeout(
+    inflow.while({},function(){   
+     if(!( while_condition )) return self.break();
+     console.log('// code here');
+     
+     var self=this;
+     setTimeout(
+     function(){
+       console.log('// inner code here');
+       self.next();
+     },1000);
+     
+    },
     function(){
-      console.log('// inner code here');
-      self.next();
-    },1000);
-    
-   },
-   function(){
-    console.log('// after while code here');
-   });
+     console.log('// after while code here');
+    });
 
-DIY toy Async While:
+bonus: DIY toy Async While:
 
     function callback()
     {
