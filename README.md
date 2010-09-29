@@ -13,17 +13,17 @@ all the other simple functions dons't need request and response.
 in a large program you could loose the response variable somewhere,
 while doing the folowing in every single small or large sync or async function call:
 
-   function (error,data,req,res)
-   {
-    (function (error,data,req,ras) 
+    function (error,data,req,res)
     {
-     (function (error,data,req,res)
+     (function (error,data,req,ras) 
      {
-      res.end('finally done');
+      (function (error,data,req,res)
+      {
+       res.end('finally done');
+      })(error,data,req,res);
      })(error,data,req,res);
-    })(error,data,req,res);
-   }
-   // see if you can spot a typo in the code above.
+    }
+    // see if you can spot a typo in the code above.
 
 
 No more complicated closures
