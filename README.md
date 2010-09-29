@@ -222,8 +222,7 @@ output:
     done
 
 
-## async while loop:
-## function while(shared,loop_function,callback,debug)
+### function while(shared,loop_function,callback,debug)
 the way you use while is: this while is basicaly while(true), you break and it with break statment.
 
 you can define the position of while condition, where do you want it to be: at the begining or at the end.
