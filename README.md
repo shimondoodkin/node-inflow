@@ -223,13 +223,17 @@ output:
 
 
 ### function while(shared,loop_function,callback,debug)
-the way you use while is: this while is basicaly while(true), you break and it with break statment.
+async while with a shared object,
+the way you use this while is this, this while is basicaly while(true) and, you break and it with a break statment.
+you can define the position of while condition, where you want it to be: at the begining or at the end. there you put a break statment.
+you should **use return**, when you call this.continue() or this.break() , otherwise it might **recurse back** to the function.
 
-you can define the position of while condition, where do you want it to be: at the begining or at the end.
+additionaly in while you have:
+    this.break()=call_the_Callback,
+and
+    this.continue()=this.next();
 
-in this while you also have: this.break()=call_the_Callback, and this.continue()=this.next();
 
-also you should use **return**, when you call this.continue() or this.break() **otherwise it might recurse back to the function.**
 
 Async While example with break at the begining, probabaly less messy idea:  
 
@@ -276,7 +280,7 @@ While example inside a callback:
      console.log('// after while code here');
     });
 
-bonus: DIY toy Async While:
+**bonus:** DIY toy Async While:
 
     function callback()
     {
