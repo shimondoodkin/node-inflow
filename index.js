@@ -48,6 +48,7 @@ function flow(shared,steps,debug,   currentstep,args,called)
  next.flow=self.flow;
  next.parallel=self.parallel;
  next.each=self.each;
+ next.while=self.while;
  next.args=args;
  
  if(typeof steps[currentstep]==='object' && steps[currentstep] instanceof  Array)
@@ -75,7 +76,6 @@ function parallel(shared,steps,callback,debug,   currentstep,args)
  var timeout=false;
  function gonext(i,result)
  {
- 
   if(status[i])
   {
    if(debug)
@@ -98,6 +98,7 @@ function parallel(shared,steps,callback,debug,   currentstep,args)
    next.parallel=self.parallel;
    next.each=self.each;
    next.results=results;
+   next.while=self.while;
    if(typeof callback==='object' && callback instanceof  Array)
     callback[0].apply(next, callback[1]);
    else
@@ -116,18 +117,21 @@ function parallel(shared,steps,callback,debug,   currentstep,args)
   next.flow=self.flow;
   next.parallel=self.parallel;
   next.each=self.each;
+  next.while=self.while;
   next.args=[];
 
   if(typeof steps[currentstep]==='object' && steps[currentstep] instanceof  Array)
   {
+   var afunction=steps[i];
    process.nextTick(function (){
-    steps[i][0].apply( next,steps[i][1] );
+    afunction[0].apply( next,afunction[1] );
    });
   }
   else
   {
+   var afunction=steps[i];
    process.nextTick(function (){
-    steps[i].call( next );
+    afunction.call( next );
    });
   }
  } 
@@ -162,7 +166,8 @@ function each(shared,steps,each_function,callback,debug,   currentstep,args,
  }
 
 
- if(arguments.length==4) debug = false;
+ if(arguments.length==4){ debug = false;}
+ 
  if(!currentstep) currentstep=0;
  //if(!results) results=[];
  if(debug){ if(!timer)timer={}; if(!called) called=[]; }
@@ -180,6 +185,8 @@ function each(shared,steps,each_function,callback,debug,   currentstep,args,
    next.flow=self.flow;
    next.parallel=self.parallel;   
    next.each=self.each;
+   next.while=self.while;
+   next.args=args;
    //next.results=results;
    if(typeof callback==='object' && callback instanceof  Array)
     callback[0].apply(next, callback[1]);
@@ -221,6 +228,7 @@ function each(shared,steps,each_function,callback,debug,   currentstep,args,
   next.flow=self.flow;
   next.parallel=self.parallel;
   next.each=self.each;
+  next.while=self.while;
   next.args=args;
 
   next.keys=keys;
@@ -233,8 +241,108 @@ function each(shared,steps,each_function,callback,debug,   currentstep,args,
 
 } this.each=each;
 
-// function while
-// function do
+//
+// verbose example with continue and break:
+//
+// inflow.while(function(){
+//  if(whilecondition)
+//  {
+//   // code here
+//   this.continue();return; // this.continue=this.next, must use **return**, to exit function;
+//   // more code here
+//   this.next();return;
+//  }   
+//  else
+//  {
+//   this.break();return; // this is a break, it calles the callback
+//  }
+// },
+// function(){
+//  // after loop code here
+// });
+//
+
+//
+// inflow.while(function()
+//  {
+//   if(whilecondition)
+//   {
+//    // code here
+//    this.next();return;
+//   }
+//   else {this.break()return;};
+//  },function(){
+//  // after loop code here
+// });
+//
+
+function loopwhile(shared,loop_function,callback,debug,  args,timer,currentstep,firstcalltrace)
+{
+ if(debug){ if(!timer)timer={}; }
+ if(!currentstep) currentstep=0; // debug
+ if(debug)  console.log(debug_trace(currentstep));
+ if(report_uncalled_callbeck_after!=0)
+  if(debug&&!firstcalltrace)  firstcalltrace=debug_trace("while - First call trace");
+ if(!firstcalltrace) currentstep=true; // debug
+ var next = function(){
+                        if(debug)if(timer.timeout) clearTimeout(timer.timeout); 
+                        //results[key]=arguments;// generally unrequired could be done with clousure
+                        process.nextTick(function(){ // if forgot to do return so do only one, also if there ar too many loops so it won't crush;
+                        loopwhile(shared,loop_function,callback,debug,  arguments
+                        ,timer,currentstep++);
+                        });
+                        if(debug) {
+                         if(report_uncalled_callbeck_after!=0)
+                         {
+                          var text=firstcalltrace+"\r\n"+debug_trace('callback did not called at step: '+currentstep);
+                          timer.timeout=setTimeout(function () {console.log(text)}, report_uncalled_callbeck_after );
+                         }
+                        }
+                       };
+  next.next=next;
+  next.shared=shared;
+  next.step=currentstep;
+  next.flow=self.flow;
+  next.parallel=self.parallel;
+  next.each=self.each;
+  next.while=self.while;
+  next.args=args;
+  next.continue=next; // just for code visibility  so you can type "continue" ...
+  next.break=function(){
+   if(debug)  console.log(debug_trace("CALLBACK")); 
+   
+   var next= function(result){ }; // does nothing, its a last one
+   next.next=next;
+   next.shared=shared;
+   next.step=currentstep;
+   next.flow=self.flow;
+   next.parallel=self.parallel;   
+   next.each=self.each;
+   next.while=self.while;
+                        
+   if(typeof callback==='object' && callback instanceof  Array)
+    callback[0].apply(next, callback[1]);
+   else if(callback)
+    callback.call(next);
+  };
+  
+  if(typeof loop_function==='object' && loop_function instanceof  Array)
+   loop_function[0].apply(next, callback[1]);
+  else
+   loop_function.call(next);
+  
+}this.while=loopwhile;
+
+// short DIY version
+//
+// function whileloop(){
+//  if(!(while condition)) return callback(); 
+//  // code here  
+//  return process.nextTick(function(){whileloop();});
+// }
+
+
+// function 
 
 /*
 
@@ -297,4 +405,3 @@ function callparallel(newthis,shared,steps,callback)
 } this.callparallel=callparallel;
 
 */
-

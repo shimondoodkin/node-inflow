@@ -221,7 +221,78 @@ output:
     222222221234 - Avi
     done
 
-### how do we use it:
+
+## async while loop:
+## function while(shared,loop_function,callback,debug)
+the way you use while is: this while is basicaly while(true), you break and it with break statment.
+
+you can define the position of while condition, where do you want it to be: at the begining or at the end.
+
+in this while you also have: this.break()=call_the_Callback, and this.continue()=this.next();
+
+also you should use **return**, when you call this.continue() or this.break() **otherwise it might recurse back to the function.**
+
+Async While example with break at the begining, probabaly less messy idea:  
+
+   inflow.while({},function(){  
+    if(!( while_condition )) return this.break();
+    
+    // code here
+    if(break_condition    ) return this.break();
+    if(continue_condition ) return this.continue(); // this.continue=this.next, must use **return**, to exit the function;
+    // code here
+
+    this.next();
+   },
+   function(){
+    console.log('// after while code here');
+   });
+   
+Async Do-While example with break at the begining, probabaly less messy idea:
+  
+   inflow.while({},function(){
+    // code here
+    if(!( while_condition )) return this.break();
+    this.next();
+   },
+   function(){
+    console.log('// after while code here');
+   });
+   
+While example inside a callback:
+  
+   inflow.while({},function(){   
+    if(!( while_condition )) return self.break();
+    console.log('// code here');
+    
+    var self=this;
+    setTimeout(
+    function(){
+      console.log('// inner code here');
+      self.next();
+    },1000);
+    
+   },
+   function(){
+    console.log('// after while code here');
+   });
+
+DIY toy Async While:
+
+    function callback()
+    {
+     console.log('done');
+    }
+    var i=1;
+    function whileloop(){
+     if(!(i<10)) return callback(); 
+     // code here
+     console.log("foo ");
+     i++;
+     return process.nextTick(function(){whileloop();});
+    }
+
+### how do we use node-inflow:
 
 a controllers in our program are objects with functions and a main function.
 node-inflow enabels us to seperate the main function to simple steps.
@@ -282,6 +353,10 @@ reference functions:
       res.end();
      });
     };
+
+
+
+
     
     
 ##Thanks to:
@@ -302,4 +377,4 @@ Each function is a part composed from:
 
  a function it self and
 
- a next() call as a return value.
+ a next() , call next() as a return value.
