@@ -78,6 +78,7 @@ pages can share functions between them. for example:
      this.flow; // inflow.flow shortcut
      this.parallel; // inflow.parallel shortcut
      this.each; // inflow.each shortcut
+     this.while; // inflow.each shortcut
      
      this.args //arguments of previously called next(arg1,arg2) function in sequential flow
      this.results //arguments of all called next(arg1,arg2) functions in parallel
@@ -85,6 +86,9 @@ pages can share functions between them. for example:
      this.key   //availible in a for_each_function, in inflow.each
      this.value //
      this.items //
+     
+     return this.continue() //availible in a while_function, in inflow.while, this.continue=this.next
+     return this.break()    //availible in a while_function, in inflow.while, call the callback and finish the loop.
      
      //also you can do:
      this(); or this.next(); //those are the same.
@@ -156,7 +160,7 @@ pages can share functions between them. for example:
 
 ## Methods:
 
-### function flow(shared,steps[,debug])
+### function flow(shared,steps [,debug])
 
 calls each step functions one after an other.
 
@@ -174,7 +178,7 @@ also available inside the called function:
     this.steps.push(some_function);
     this.steps.push([some_function,[arg1,arg2]]); // with arguments
 
-###function parallel(shared,steps,callback[,debug])
+###function parallel(shared,steps[,callback] [,debug])
 
 calls all the steps functions and when all done it calls the callback function.
 
@@ -192,7 +196,9 @@ also available inside the callback function:
 
     this.results // array of all next arguments
 
-###function each(shared,items,each_function,callback [,debug])
+###function each(shared,items,each_function[,callback] [,debug])
+
+ a for each function, it can have an object as input for items
 
 each_function: (as in Array.forEach callback)
 
@@ -221,8 +227,12 @@ output:
     222222221234 - Avi
     done
 
+/*
+ it seems to me that the shared object in forEach and in while is use less.
+ tell me what you think.
+*/
 
-### function while(shared,loop_function,callback,debug)
+### function while(shared,loop_function[,callback] [,debug])
 async while with a shared object,
 the way you use this while is this, this while is basicaly while(true) and, you break and it with a break statment.
 you can define the position of while condition, where you want it to be: at the begining or at the end. there you put a break statment.

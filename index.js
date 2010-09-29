@@ -20,6 +20,7 @@ var self=this;
 // one simple function 
 function flow(shared,steps,debug,   currentstep,args,called)
 {
+ if(!steps)steps=[];
  if(arguments.length==2) debug = false;
  if(!currentstep) currentstep=0;
  if(debug){ if(steps.timeout) clearTimeout(steps.timeout); if(!called) called=[]; }
@@ -70,24 +71,29 @@ function flow(shared,steps,debug,   currentstep,args,called)
 
 function parallel(shared,steps,callback,debug,   currentstep,args)
 {
- var callbackcount=0;
+ var callback_count=0;
  var status=[];
  var results=[];
  var timeout=false;
  function gonext(i,result)
  {
-  if(status[i])
+  
+  if(i!==false)
   {
-   if(debug)
-    console.log(debug_trace(' called more then once '));
+   if(status[i])
+   {
+    if(debug)
+    {
+     console.log(debug_trace(' called more then once '));
+     return;
+    } 
+   }
+   callback_count++; 
+   status[i]=true;
+   results[i]=result;
   }
-  else
-   return;
 
-  callback_count++;
-  status[i]=true;
-  results[i]=result;
-  if( callback_count == steps.length )
+  if( callback_count == steps.length  )
   {
    var next= function(result){ }; // this inside gonext so this does nothing
    next.next=next;
@@ -99,14 +105,27 @@ function parallel(shared,steps,callback,debug,   currentstep,args)
    next.each=self.each;
    next.results=results;
    next.while=self.while;
-   if(typeof callback==='object' && callback instanceof  Array)
-    callback[0].apply(next, callback[1]);
-   else
-    callback.call(next,results);
-
+   if(callback)
+   {
+    if(typeof callback==='object' && callback instanceof  Array)
+     callback[0].apply(next, callback[1]);
+    else
+     callback.call(next,results);
+   }
    if(timeout)clearTimeout(timeout);//of debug
   }
  }
+ if(!steps)
+ {
+  steps=[];
+  gonext(false,[]);
+ }
+ else if(steps.length==0)
+ {
+  gonext(false,[]);
+ }
+ else
+ {
  for(var i=0;i<steps.length;i++)
  {
   var next= function(result){ gonext(i,result); };
@@ -135,6 +154,7 @@ function parallel(shared,steps,callback,debug,   currentstep,args)
    });
   }
  } 
+ }
  if(debug)
  {
   if(report_uncalled_callbeck_after!=0)
@@ -149,6 +169,7 @@ function each(shared,steps,each_function,callback,debug,   currentstep,args,
   //results,
   keys,called,timer)
 {
+ if(!steps)steps=[];
  //console.log(require('sys').inspect(steps));
  if(typeof keys==='undefined')
  {
@@ -188,10 +209,13 @@ function each(shared,steps,each_function,callback,debug,   currentstep,args,
    next.while=self.while;
    next.args=args;
    //next.results=results;
-   if(typeof callback==='object' && callback instanceof  Array)
-    callback[0].apply(next, callback[1]);
-   else
-    callback.call(next);
+   if(callback)
+   {
+    if(typeof callback==='object' && callback instanceof  Array)
+     callback[0].apply(next, callback[1]);
+    else
+     callback.call(next);
+   }
    });
    return;
  }

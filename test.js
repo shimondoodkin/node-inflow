@@ -1,6 +1,9 @@
-// to test specific case comment with /* */ the other ones 
+// to test specific case comment with /* */ the other ones
+ 
 var inflow = require('./index');
 var sys = require('sys');
+
+var undef;
 
 var i=0;
 function foo()
@@ -26,55 +29,160 @@ function should_not_called_each_function(value,key,array){
 }
 
 
-function done_callback(value){
+function done_callback(value,callback){
  i++;console.log(i+' done "'+(value?value:'')+'", shared='+sys.inspect(this.shared).split("\n").join('')+', args='+sys.inspect(this.args).split("\n").join(''));
+ if(callback)callback();
  this.next(i+' done "'+(value?value:'')+'" ok');
 }
 
-var n=0
-function while_function(){
- //console.log('before condition - while');
- if(!(n<10)) return this.break();
- i++;console.log(i+' while, shared='+sys.inspect(this.shared).split("\n").join('')+', args='+sys.inspect(this.args).split("\n").join(''));
-
- n++;
- if(n==5)
- {  
-  console.log('n='+n+' continue...');
-  return this.continue();
- }
+function get_while_function()
+{
+ var n=0;
+ return (
+ function while_function(){
+  //console.log('before condition - while');
+  if(!(n<10)) return this.break();
+  i++;console.log(i+' while, shared='+sys.inspect(this.shared).split("\n").join('')+', args='+sys.inspect(this.args).split("\n").join(''));
  
- console.log('whiling '+n);
-
- this.next(i+' while ok');
+  n++;
+  if(n==5)
+  {  
+   console.log('n='+n+' continue...');
+   return this.continue();
+  }
+  
+  console.log('whiling '+n);
+ 
+  this.next(i+' while ok');
+ });
 }
 
 var shared={};
 
+var tests=[
+
+function (){
+console.log('\n // flow\n');
 
 console.log('\n flow:\n');
-inflow.flow(shared,[foo,bar,[done_callback,['flow (array)']]]);
+inflow.flow(shared,[foo,bar,[done_callback,['flow (array)',this]]]);
+
+}
+,
+function (){
+
+console.log('\n flow (empty):\n');
+inflow.flow(shared,[]);
+this();
+}
+,
+function (){
+console.log('\n // parallel\n');
 
 console.log('\n parallel:\n');
-inflow.parallel(shared,[foo,bar],[done_callback,['parallel']]);
+inflow.parallel(shared,[foo,bar],[done_callback,['parallel',this]]);
+
+}
+,
+function (){
+
+console.log('\n parallel (empty):\n');
+inflow.parallel(shared,[],[done_callback,['parallel',this]]);
+
+}
+,
+function (){
+console.log('\n // each\n');
 
 console.log('\n each (array):\n');
-inflow.each(shared,['foo (array)','bar (array)'],each_function,[done_callback,['each (array)']]);
+inflow.each(shared,['foo (array)','bar (array)'],each_function,[done_callback,['each (array)',this]]);
+
+}
+,
+function (){
 
 console.log('\n each (array):\n');
-inflow.each(shared,{'foo':'foo (object)','bar':'bar (object)'},each_function,[done_callback,['each (object)']]);
+inflow.each(shared,{'foo':'foo (object)','bar':'bar (object)'},each_function,[done_callback,['each (object)',this]]);
+
+}
+,
+function (){
 
 console.log('\n each (empty array):\n');
-inflow.each(shared,[],should_not_called_each_function,[done_callback,['each (empty array)']]);
+inflow.each(shared,[],should_not_called_each_function,[done_callback,['each (empty array)',this]]);
+
+}
+,
+function (){
 
 console.log('\n each (empty object):\n');
-inflow.each(shared,{},should_not_called_each_function,[done_callback,['each (empty object)']]);
+inflow.each(shared,{},should_not_called_each_function,[done_callback,['each (empty object)',this]]);
 
+}
+,
+function (){
+
+console.log('\n // while\n');
 
 console.log('\n while:\n');
-inflow.while(shared,while_function,[done_callback,['while']]);
+inflow.while(shared,get_while_function(),[done_callback,['while',this]]);
+
+}
+,
+function (){
+console.log('\n // undefined input\n');
 
 
+console.log('\n flow (undefined):\n');
+inflow.flow(shared,undef);
+
+setTimeout(this,100);
+
+}
+,
+function (){
+
+console.log('\n parallel  (undefined):\n');
+inflow.parallel(shared,undef,this);
+
+}
+,
+function (){
+
+console.log('\n each  (undefined):\n');
+inflow.each(shared,undef,each_function,this);
+
+}
+,
+function (){
+console.log('\n ///no callback\n');
+
+console.log('\n no callback-parallel:\n');
+inflow.parallel(shared,[foo,bar]);
+
+setTimeout(this,100);
+}
+,
+
+function (){
+
+console.log('\n no callback-each (array):\n');
+inflow.each(shared,['foo (array)','bar (array)'],each_function);
+
+setTimeout(this,100);
+}
+
+,
+
+function (){
+
+console.log('\n no callback-while:\n');
+
+inflow.while(shared,get_while_function());
+setTimeout(this,100);
+}
+
+];
 
 
-
+inflow.flow(shared,tests);
