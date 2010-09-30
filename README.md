@@ -41,7 +41,7 @@ app.js:
      [app.user.load_userdata,['value to arg1']], 
      app.common.rander
     ]);
-    // see full example few paragraps below
+    // see Full example later in the page
     
 this way you can have functions inside other files easily without closure
 
@@ -249,7 +249,8 @@ While example inside a callback:
 The problem is that you have to carray the Request and Response,
 all the way, through the callbcacks and non-callbacks...
 just to be able to do Response.write() and Response.end() at the end.
-all the other simple functions dons't need request and response. 
+all the other simple functions dons't need request and response.
+but even then you must carry it to not loose it at the end. 
 
 in a large program you could loose the response variable somewhere,
 while doing the folowing in every single small or large sync or async function call:
