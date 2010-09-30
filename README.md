@@ -245,7 +245,7 @@ and
 
 
 
-Async While example with break at the begining, probabaly less messy idea:  
+Async While - while with break at the begining:  
 
     inflow.while({},function(){  
      if(!( while_condition )) return this.break();
@@ -261,7 +261,7 @@ Async While example with break at the begining, probabaly less messy idea:
      console.log('// after while code here');
     });
    
-Async Do-While example with break at the begining, probabaly less messy idea:
+Async Do-While - while with break at the end:
   
     inflow.while({},function(){
      // code here
@@ -273,18 +273,18 @@ Async Do-While example with break at the begining, probabaly less messy idea:
     });
    
 While example inside a callback:
-  
-    inflow.while({},function(){   
-     if(!( while_condition )) return self.break();
+    var n=0;
+    inflow.while({},function(){
+     if(!( n<100 )) return self.break();
      console.log('// code here');
-     
+     n++;
      var self=this;
      setTimeout(
      function(){
        console.log('// inner code here');
        self.next();
      },1000);
-     
+    
     },
     function(){
      console.log('// after while code here');
@@ -305,7 +305,7 @@ While example inside a callback:
      return process.nextTick(function(){whileloop();});
     }
 
-### how do we use node-inflow:
+## How do we use node-inflow:
 
 a controllers in our program are objects with functions and a main function.
 node-inflow enabels us to seperate the main function to simple steps.
@@ -368,7 +368,7 @@ reference functions:
     };
 
 
-
+* also i have used inflow.each to implement sending message to a list.
 
     
     
