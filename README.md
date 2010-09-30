@@ -228,7 +228,7 @@ output:
     done
 
 /*
- it seems to me that the shared object in forEach and in while is use less.
+ It seems to me that the shared object in Each() and in While() is useless.
  tell me what you think.
 */
 
