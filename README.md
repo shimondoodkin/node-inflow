@@ -275,7 +275,7 @@ Async Do-While - while with break at the end:
 While example inside a callback:
     var n=0;
     inflow.while({},function(){
-     if(!( n<100 )) return self.break();
+     if(!( n<5 )) return self.break();
      console.log('// code here');
      n++;
      var self=this;
