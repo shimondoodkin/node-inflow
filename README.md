@@ -9,8 +9,8 @@ Simply download it:
 
 ## How to use it
     var inflow = require('node-inflow'); // require it
-    inflow.flow(shared_object,[afunction,nextfunction,[otherfunction,[function_argument]])
-    inflow.parallel(shared_object,[afunction,nextfunction,[otherfunction,[function_argument]],done_function);
+    inflow.flow(shared_object,[myfunction1,myfunction2,[myfunction3,[myfunction3_argument1,myfunction3_argument2]])
+    inflow.parallel(shared_object,[myfunction1,myfunction2,[myfunction3,[myfunction3_argument1,myfunction3_argument2]],done_function);
     inflow.each(shared_object,array_or_object,foreach_function(value,key,array),done_function);
     inflow.while(shared,loop_function,done_function)
 
