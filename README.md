@@ -50,6 +50,7 @@ Simply download it:
     inflow.flow(shared_object,[afunction,nextfunction,[otherfunction,[function_argument]])
     inflow.parallel(shared_object,[afunction,nextfunction,[otherfunction,[function_argument]],done_function);
     inflow.each(shared_object,array_or_object,foreach_function(key,value,array),done_function);
+    inflow.while(shared,loop_function,done_function)
 
 We usually call function from an object,
 for example in a website we have several pages (objects).
@@ -178,7 +179,7 @@ also available inside the called function:
     this.steps.push(some_function);
     this.steps.push([some_function,[arg1,arg2]]); // with arguments
 
-###function parallel(shared,steps[,callback] [,debug])
+###function parallel(shared,steps [,callback] [,debug])
 
 calls all the steps functions and when all done it calls the callback function.
 
@@ -196,7 +197,7 @@ also available inside the callback function:
 
     this.results // array of all next arguments
 
-###function each(shared,items,each_function[,callback] [,debug])
+###function each(shared,items,each_function [,callback] [,debug])
 
  a for each function, it can have an object as input for items
 
@@ -232,9 +233,9 @@ output:
  tell me what you think.
 */
 
-### function while(shared,loop_function[,callback] [,debug])
+### function while(shared, loop_function [,callback] [,debug])
 async while with a shared object,
-the way you use this while is this, this while is basicaly while(true) and, you break and it with a break statment.
+the way you use this while is this, this while is basicaly while(true) and, you break it with a break statment.
 you can define the position of while condition, where you want it to be: at the begining or at the end. there you put a break statment.
 you should **use return**, when you call this.continue() or this.break() , otherwise it might **recurse back** to the function.
 
@@ -242,7 +243,6 @@ additionaly in while you have:
     this.break()=call_the_Callback,
 and
     this.continue()=this.next();
-
 
 
 Async While - while with break at the begining:  
