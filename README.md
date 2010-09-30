@@ -9,8 +9,8 @@ Simply download it:
 
 ## How to use it
     var inflow = require('node-inflow'); // require it
-    inflow.flow(shared_object,[myfunction1,myfunction2,[myfunction3,[myfunction3_argument1,myfunction3_argument2]])
-    inflow.parallel(shared_object,[myfunction1,myfunction2,[myfunction3,[myfunction3_argument1,myfunction3_argument2]],done_function);
+    inflow.flow(shared_object,[myfunction1,myfunction2,[myfunction3,[myfunction3_arg1,myfunction3_arg2]])
+    inflow.parallel(shared_object,[myfunction1,myfunction2,[myfunction3,[myfunction3_arg1,myfunction3_arg2]],done_function);
     inflow.each(shared_object,array_or_object,foreach_function(value,key,array),done_function);
     inflow.while(shared,loop_function,done_function)
 
@@ -244,72 +244,6 @@ While example inside a callback:
      i++;
      return process.nextTick(function(){whileloop();});
     }
-
-## How do we use node-inflow:
-
-a controllers in our program are objects with functions and a main function.
-node-inflow enabels us to seperate the main function to simple steps.
-
-    var page={
-     load_user:function () { // task 1
-      //
-      var shared=this.shared,app=shared.app,req=shared.req;
-      shared.user=app.models.getone({id:req.parsedurl.query.id});//{name:'someone',...}
-      this();
-     }
-     set_name:function () { // task 2
-      //
-      var shared=this.shared;
-      shared.name=(shared.user.name||"")+' is awsome'
-      this();
-     }
-     
-     mytempalte:app.templates.load('views/atemplate.html'), // some template
-     
-     main:function (shared){ // main function
-      var page=shared.page;
-      var common=shared.app.pages.common;
-      shared.view=page.my_template;
-      app.inflow.flow( shared, [page.load_user, page.set_name, common.render] ); // step though the tasks
-     }
-     
-    }
-    
-    // * our main functions not yet called by node-inflow, node-inflow is fresh, i'll convert to it later
-
-reference functions:
-
-    page.my_template=function (vars,callback)  // app.templates.load('views/atemplate.html')
-    {
-      echo='hello '+vars.name;
-      if(callback)callback(echo);else return echo;
-    },
-     
-    //a simplified function like the function that calls main. (just for reference)
-    app.route = function ()
-    {
-     // if route matches:
-     //{
-     shared.page=matched_page;
-     matched_page.main.call(matched_page,shared,app);
-     //}
-    }
-       
-    common.render = function () {
-     var shared = this.shared;
-     var page = shared.page;
-     var res = shared.res;
-     shared.header = (shared.header ? shared.header : {'Content-Type': 'text/html'});
-     shared.view.call(page, shared, function (echo) {
-      res.writeHead(200, shared.header);
-      res.write(echo);
-      res.end();
-     });
-    };
-
-
-* also i have used inflow.each to implement sending message to a list.
-
 ## Why use it
 
 The problem is that you have to carray the Request and Response,
@@ -410,7 +344,74 @@ With this library I could reinvented the way I use an http server
     };
     
     console.log('Server running at http://127.0.0.1:8124/');    
+
+
+## How do we use node-inflow:
+
+a controllers in our program are objects with functions and a main function.
+node-inflow enabels us to seperate the main function to simple steps.
+
+    var page={
+     load_user:function () { // task 1
+      //
+      var shared=this.shared,app=shared.app,req=shared.req;
+      shared.user=app.models.getone({id:req.parsedurl.query.id});//{name:'someone',...}
+      this();
+     }
+     set_name:function () { // task 2
+      //
+      var shared=this.shared;
+      shared.name=(shared.user.name||"")+' is awsome'
+      this();
+     }
+     
+     mytempalte:app.templates.load('views/atemplate.html'), // some template
+     
+     main:function (shared){ // main function
+      var page=shared.page;
+      var common=shared.app.pages.common;
+      shared.view=page.my_template;
+      app.inflow.flow( shared, [page.load_user, page.set_name, common.render] ); // step though the tasks
+     }
+     
+    }
     
+    // * our main functions not yet called by node-inflow, node-inflow is fresh, i'll convert to it later
+
+reference functions:
+
+    page.my_template=function (vars,callback)  // app.templates.load('views/atemplate.html')
+    {
+      echo='hello '+vars.name;
+      if(callback)callback(echo);else return echo;
+    },
+     
+    //a simplified function like the function that calls main. (just for reference)
+    app.route = function ()
+    {
+     // if route matches:
+     //{
+     shared.page=matched_page;
+     matched_page.main.call(matched_page,shared,app);
+     //}
+    }
+       
+    common.render = function () {
+     var shared = this.shared;
+     var page = shared.page;
+     var res = shared.res;
+     shared.header = (shared.header ? shared.header : {'Content-Type': 'text/html'});
+     shared.view.call(page, shared, function (echo) {
+      res.writeHead(200, shared.header);
+      res.write(echo);
+      res.end();
+     });
+    };
+
+also i have used:
+* inflow.each to implement sending message to a list and,
+* i will use inflow.while to send messges periodicaly.
+
 ##Thanks to:
 
 Creationix - I used his concept for this library.
