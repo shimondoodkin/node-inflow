@@ -20,8 +20,30 @@ var self=this;
 // one simple function 
 function flow(shared,steps,debug,   currentstep,args,called)
 {
+ if(arguments.length==2) // shared,steps  or steps,debug , lets test it and find out witch one is it
+ {
+  if(typeof steps=='boolean')
+  {
+   debug=steps;
+   steps=shared;
+   shared={};
+  }
+  else
+  {
+   // shared=shared
+   // steps=steps
+   debug = false;
+  }
+ }
+ if(arguments.length==1) // steps 
+ {
+  steps=shared;
+  shared={};
+  debug = false;
+ }
+ 
  if(!steps)steps=[];
- if(arguments.length==2) debug = false;
+ 
  if(!currentstep) currentstep=0;
  if(debug){ if(steps.timeout) clearTimeout(steps.timeout); if(!called) called=[]; }
  if(currentstep>=steps.length)
@@ -51,26 +73,97 @@ function flow(shared,steps,debug,   currentstep,args,called)
  next.each=self.each;
  next.while=self.while;
  next.args=args;
- 
  if(typeof steps[currentstep]==='object' && steps[currentstep] instanceof  Array)
  {
   steps[currentstep][0].apply( next,steps[currentstep][1]);
  }
  else
  {
-  if(typeof args==='object' && args instanceof  Array)
+  if(typeof args==='object' && args.length>0)
+  {
    steps[currentstep].apply( next , args);
+  }
   else
+  {
    steps[currentstep].call( next );
+  }
  }
  
 } this.flow=flow;
 
-
-// other unfinished perfectionism:
+function is_argfunction(f)
+{
+ if(f===null) return true;
+ if(f===undefined) return true;
+ if(typeof f=='function') return true;
+ if(typeof f=='object' && f instanceof Array && f.length>0 &&
+  (
+   typeof f[0]=='function' &&
+   (
+    f.length==1
+    ||
+    f.length==2 &&
+    (
+     f[1]===undefined
+     ||
+     f[1]===null
+     ||
+     typeof f[1]=='object' && f[1] instanceof Array
+    )
+   )
+  )
+ ) return true;
+ return false; 
+}
 
 function parallel(shared,steps,callback,debug,   currentstep,args)
 {
+ if(arguments.length==3) // shared,steps,callback,  or steps,callback,debug, , lets test it and find out witch one is it
+ {
+  if(typeof callback==='boolean') // test for steps,callback,debug,
+  {
+   debug=callback;
+   callback=steps;
+   steps=shared;
+   shared={};
+  }
+ }
+ if(arguments.length==2) // shared[any object],steps[object or array],  // correct 1
+                        //  steps[object or array],callback[array or function],  // correct2
+                        //  steps[object or array],debug[boolean] - by misstake
+ {
+  if(typeof steps==='boolean') //misstake
+  {
+   debug=steps;
+   steps=shared;
+   shared={};
+  }
+  else if((typeof shared==='object' && !(shared instanceof Array)) && (typeof steps==='object' && (steps instanceof Array) )) // correct 1 paritialy
+  {
+   //shared=shared;
+   //steps=steps;
+  }
+  else if( (typeof shared==='object' && (shared instanceof Array) && is_argfunction(steps) )) // correct 2 paritialy
+  {
+   steps=shared;
+   callback=steps;
+   shared={};
+  }
+  else
+  {
+   // error
+   steps=shared;
+   callback=steps;
+  }
+  steps=shared;
+  shared={};
+ }
+ if(arguments.length==1) // steps 
+ {
+  steps=shared;
+  shared={};
+ }
+ 
  var callback_count=0;
  var status=[];
  var results=[];
@@ -169,6 +262,56 @@ function each(shared,steps,each_function,callback,debug,   currentstep,args,
   //results,
   keys,called,timer)
 {
+ if(arguments.length==2) // could be just : steps,each_function
+ {
+  each_function=steps;
+  steps=shared;
+  shared={};
+ }
+ 
+ if(arguments.length==3) // steps,each_function,callback,  or shared,steps,each_function, steps,each_function,debug, lets test it and find out witch one is it
+ {
+  if(typeof each_function=='boolean') // test for steps,callback,debug,
+  {
+   debug=each_function;
+   each_function=steps;
+   steps=shared;
+   shared={};
+  }
+  else if(typeof each_function=='function') // shared,steps,each_function,
+  {
+   //each_function=each_function;
+   //steps=steps;
+   //shared=shared;
+  }
+  else if(typeof steps=='function') // shared,steps,each_function,
+  {
+   each_function=steps;
+   steps=shared;
+   shared={};
+  }
+  else if(typeof steps=='object' && steps instanceof Array && (!is_argfunction(steps)) ) // shared,steps!function,each_function,
+  {
+   //is_argfunction(each_function) // probably = true
+   //each_function=each_function;
+   //steps=steps;
+   //shared=shared;
+  }
+  else if(typeof steps=='object' && steps instanceof Array && (!is_argfunction(steps)) ) // shared,steps!function,each_function,
+  { 
+   //is_argfunction(each_function) // probably = true
+   //each_function=each_function;
+   //steps=steps;
+   //shared=shared;
+  }
+  else
+  {
+   //shared,steps,each_function,
+  }
+  
+  
+ }
+ 
  if(!steps)steps=[];
  //console.log(require('sys').inspect(steps));
  if(typeof keys==='undefined')
