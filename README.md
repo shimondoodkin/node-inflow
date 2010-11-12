@@ -28,10 +28,14 @@ Simply download it:
 
 <a name="flow" />
 
-####serial([shared], steps [,interval] [,debug])
+#### serial([shared], steps [,interval] [,debug])
+
 __Alias:__  Step 
+
 __Alias:__  step
+
 __Alias:__  seq 
+
 __Alias:__  flow
 
 Sequential async execution of functions.
@@ -84,7 +88,7 @@ example3:
 
 <a name="parallel" />
 
-**parallel([shared],steps [,chunksize] [,callback] [,debug])**
+#### parallel([shared],steps [,chunksize] [,callback] [,debug])
 
 Parallel async execution of functions.
 
@@ -107,7 +111,13 @@ Parallel async execution of functions.
 
 <a name="each" />
 
-**each([shared,]items,each_function [,callback] [,debug])**
+#### each([shared,]items,each_function [,callback] [,debug])
+
+__Alias:__ forEach
+
+__Alias:__ foreach
+
+__Alias:__ map
 
 It is an Async forEach implementation. It calls the each_function once for each item in items.
 
@@ -141,7 +151,7 @@ output:
 
 <a name="while" />
 
-**while(shared, loop_function [,callback] [,debug])**
+#### while(shared, loop_function [,callback] [,debug])
 
 In while you have:
     this.break()=call_the_Callback,
@@ -162,11 +172,16 @@ Example:
 
 <a name="if" />
 
-**if(bool/function condition,function iftrue,function iffalse)**
+#### if(condition,iftrue,iffalse)
 
 The if function is a conditional function call function.
 If the condition function is used then call in the condition function this.next(true/false);
 The iftrue function or iffalse function is executed with the same shared object as the if function was called.
+
+ * Description of arguments:
+   * condition  - A boolean or a an async function.
+   * iftrue  - A function to call if the result is true
+   * iffalse - A function to call if the result is false
 
       inflow.flow(shared,
       [
