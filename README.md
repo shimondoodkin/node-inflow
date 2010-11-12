@@ -28,10 +28,11 @@ Simply download it:
 
 <a name="flow" />
 
-####flow([shared], steps [,interval] [,debug])
-__Alias:__  Step *is not developed yet
-__Alias:__  seq *is not developed yet
-__Alias:__  serial *is not developed yet
+####serial([shared], steps [,interval] [,debug])
+__Alias:__  Step 
+__Alias:__  step
+__Alias:__  seq 
+__Alias:__  flow
 
 Sequential async execution of functions.
 
@@ -180,8 +181,6 @@ The iftrue function or iffalse function is executed with the same shared object 
       function(){  console.log("random choice of period of time with async if"); }
       );
 
-* If is not developed yet
-
 
 <a name="recursion" />
 
@@ -223,6 +222,5 @@ When calling the recursive function it is easy to copy the the name of the funct
 **Notes**
 
 * [[About node-inflow]]
-* This library good. The "* Is not developed yet" Because i've got new ideas to add.
 * [[Why use this async flow library]]
 
