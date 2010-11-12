@@ -1,434 +1,228 @@
-# Node-Inflow
-A next generation async control-flow library, with a shared object for called functions and debugging made easy.
+#Node-inflow
 
-Designed with user in mind and debugging in mind.
+Node-inflow is a utility module which provides essential async control-flow functions for working with asynchronous JavaScript.
+
+
+The new idea here is to use a shared object for called functions. The debugging made easy. Also I tried to use known function names for the known functionalities.
+
+It is designed with user in mind and with experience.
+
+* [How to install](#install)
+* Methods
+  * [flow](#flow) * featured function *
+  * [parallel](#parallel)
+  * [each](#each) * featured function *
+  * [while](#while)
+  * [if](#if)
+  * [recursion](#recursion) * featured example *
+* [Short examples for all functions](#short)
+* [Notes](#notes)
+
+<a name="install" />
 
 ## How to install
 Simply download it:
     git clone https://github.com/shimondoodkin/node-inflow.git
 
-## How to use it
+## Methods:
+
+<a name="flow" />
+
+####flow([shared], steps [,interval] [,debug])
+__Alias:__  Step *is not developed yet
+__Alias:__  seq *is not developed yet
+__Alias:__  serial *is not developed yet
+
+Sequential async execution of functions.
+
+ * Description of arguments:
+   * shared    - It is an object that is shared between all function as this.shared, It is optional
+   * steps      - It is an array of functions to call one after another
+   * callback  - A function to call after all functions in steps are finished (each called this.next())  It is optional. *Is not developed yet
+   * interval    - It is a number, repeat the sequence after this setTimeout()  It is optional. * It is not developed yet
+   * debug     - A boolean to show traces of calls to this.next() function in console.log, It is optional.
+
+ * Examples:
+
+       var inflow = require('node-inflow');
+example1:
+       inflow.flow([
+         function(){console.log("1");this.next();},
+         function(){console.log("2");this.next();}
+       ]);
+example2:
+       var shared={req:req,res:res};
+       inflow.flow(
+        shared,
+        [
+         function(){this.shared.myvar=1;this.next();}
+         ,
+         function()
+         {
+          var shared=this.shared;
+          var res=shared.res;
+          res.writeHeaders([{'content-type':'text/html;charset=utf-8'}]);
+          res.end(shared.myvar);
+          this.next();
+         }
+       ]);
+example3:
+       inflow.flow([
+         function(){console.log("1");this.next();},
+         function(){console.log("2");this.next();}
+       ],true); // with debug info in the console
+ 
+ * More info:
+   * [[Arguments of a callback as an array structure]]
+   * [["this" of a called function]]
+   * More about: [[method flow]]
+   * More examples:
+     * [[How to use it with a library of functions]]
+     * [[Example Application]]
+     * [[How do we use node-inflow]]
+
+<a name="parallel" />
+
+**parallel([shared],steps [,chunksize] [,callback] [,debug])**
+
+Parallel async execution of functions.
+
+ * Description of arguments:
+   * shared      - It is an object that is shared between all function as this.shared, it is optional
+   * steps        - It is an array of functions to call in parallel
+   * chunksize -  It is a number, it limits the maximum amount of functions executed in one time.  It is optional. * It is not developed yet
+   * callback    - A function to call after all functions in steps are finished (each called this.next())
+   * debug       - A boolean to show traces of calls to this.next() function in console.log, It is optional.
+
+         inflow.parallel(shared,
+         [
+          function(){  console.log("wait 1000"); setTimeout(this.next,1000); },
+          function(){  console.log("wait 1500"); setTimeout(this.next,1500); }
+         ] ,
+         function(){  console.log("both function waited during the same period of time"); }
+         );
+
+* More about: [[parallel]]
+
+<a name="each" />
+
+**each([shared,]items,each_function [,callback] [,debug])**
+
+It is an Async forEach implementation. It calls the each_function once for each item in items.
+
+
+
+example:
+
+     app.inflow.each(shared,[
+       {phone:'111111111234',name:'Simon'},
+       {phone:'222222221234',name:'Avi'}
+     ],function (val){
+      shared.res.write(val.phone+" - "+val.name+"\r\n");
+      this();
+     },function (){
+      shared.res.end('done');
+     });
+
+output: 
+
+     111111111234 - Simon
+     222222221234 - Avi
+     done
+
+ * Description of arguments:
+   * shared            - It is an object that is shared between all function as this.shared, It is optional
+   * items              - It is an array or object of items to iterate through
+   * each_function  - function(value,key,items){ codehere; this.next();} A function to be executed for each item.
+   * callback          - A function to call when done doing for-each.
+   * debug             - A boolean to show traces of calls to this.next() function in console.log, It is optional.
+* More about [[each]]
+
+<a name="while" />
+
+**while(shared, loop_function [,callback] [,debug])**
+
+In while you have:
+    this.break()=call_the_Callback,
+    this.continue()=this.next();
+
+Example:
+  
+    inflow.while({},function(){
+     // code here
+     if(!( while_condition )) return this.break();
+     this.next();
+    },
+    function(){
+     console.log('// after while code here');
+    });
+  * More about [[while]]
+
+
+<a name="if" />
+
+**if(bool/function condition,function iftrue,function iffalse)**
+
+The if function is a conditional function call function.
+If the condition function is used then call in the condition function this.next(true/false);
+The iftrue function or iffalse function is executed with the same shared object as the if function was called.
+
+      inflow.flow(shared,
+      [
+       function(){  console.log("wait 1000"); setTimeout(this.next,1000); },
+       inflow.if(
+           function(){ this.next(Math.random()>0.5); },
+           function(){  console.log("wait 1000"); setTimeout(this.next,1000); }
+           ,
+           function(){  console.log("wait 1500"); setTimeout(this.next,1500); }
+       )
+      ] ,
+      function(){  console.log("random choice of period of time with async if"); }
+      );
+
+* If is not developed yet
+
+
+<a name="recursion" />
+
+**Recursion **
+
+To do async recursion you do not need async control flow library it is already async ready.
+But you have to hold state, You do it by adding a shared object at the end of arguments.
+When calling the recursive function it is easy to copy the the name of the function and the arguments as is from function definition line to the place of calling the callback.
+
+    function print_file_contents_n_times(filename_arg1,times_to_read,callback,shared)
+    {
+     if(!shared)shared={i:times_to_read};
+     if(shared.i>0)
+     {
+      fs.readFile(filename, "binary", function(err, file) {  
+         shared.i--;
+         print_file_contents_n_times(filename_arg1,times_to_read,shared);
+      }
+     }
+     else
+     {
+      callback();
+     }
+    }
+
+<a name="short" />
+
+**Short examples for all functions:**
+
     var inflow = require('node-inflow'); // require it
     inflow.flow(shared_object,[myfunction1,myfunction2,[myfunction3,[myfunction3_arg1,myfunction3_arg2]])
     inflow.parallel(shared_object,[myfunction1,myfunction2,[myfunction3,[myfunction3_arg1,myfunction3_arg2]],done_function);
     inflow.each(shared_object,array_or_object,foreach_function(value,key,array),done_function);
     inflow.while(shared,loop_function,done_function)
 
-## How to use it with a library of functions
 
-We usually call function from a library object,
-for example in a website we have several pages (objects).
-pages can share functions between them. for example:
+<a name="notes" />
 
-user.js:
-    this.checklogin=function(){
-     ...
-     this();
-    }
-    
-    this.load_userdata=function(arg1){
-     ... 
-     this();
-    }
-    
-app.js:
-    var app={};
-    app.user=require('user');
-    var shared={ app:app } 
-    inflow.flow(shared,
-    [
-     app.user.checklogin,
-     [app.user.load_userdata,['value to arg1']], 
-     app.common.rander
-    ]);
-    // see Full example later in the page
-    
-this way you can have functions inside other files easily without closure
+**Notes**
 
-## Arguments of called functions:
-If its a function , then the function is used , if its an array, then: 
-the first array item is the function,
-the secend array item is arguments as array.
+* [[About node-inflow]]
+* This library good. The "* Is not developed yet" Because i've got new ideas to add.
+* [[Why use this async flow library]]
 
-Without arguments:
-    function_name
-    
-With arguments:
-    [function_name,arguments_array]
-    for example:
-    [function_name,[arg1,arg2]]
-    
-Steps array:
-    var steps=[
-      function_name,
-      [function_name,[arg1,arg2]]
-    ];
-    
-Callback arguments:
-    inflow.each(shared,myobject,function(value){},[function_name,[arg1,arg2]]);
-
-## Available in "this" in a called function:
-
-    function part(argument1,...)
-    {
-     this.next(return_value); // a function to call at the end of the part;
-     this.shared // a shared object between all the calls in a flow
-     
-     //and also:
-     this.shared.lib // idea how to do dependency injection (a shared object that holds all the libraries)
-     this.shared.app // also you can give access to other global shared objects
-     
-     this.steps;  // array of all function (it is possible to push to it a new next step)
-     
-     this.flow; // inflow.flow shortcut
-     this.each; // inflow.each shortcut
-     this.parallel; // inflow.parallel shortcut
-     this.while; // inflow.each shortcut
-     
-     this.args //arguments of previously called next(arg1,arg2) function in sequential flow
-     this.results //arguments of all called next(arg1,arg2) functions in parallel
-     
-     this.key   //availible in "this" of for_each_function, in inflow.each
-     this.value //
-     this.items //
-     
-     return this.continue() //availible in "this" of a while_function, in inflow.while, this.continue=this.next
-     return this.break()    //availible in "this" of a while_function, in inflow.while, call the callback and finish the loop.
-     
-     //also you can do:
-     this(); or this.next(); //those are the same.
-    };
-    
-## Methods:
-
-### function flow(shared,steps [,debug])
-
-calls each step functions one after an other.
-
-the steps variable can contain an array.
-each item in this array can be a function.
-to add arguments to a function.
-an item can contain an array as folows: [a_function, array_of_arrguments] .
-
-also available inside the called function:
-
-    this.args //arguments of previusly called next function
-
-(advanced staff:) you may push a next step into the end of steps array:
-
-    this.steps.push(some_function);
-    this.steps.push([some_function,[arg1,arg2]]); // with arguments
-
-###function parallel(shared,steps [,callback] [,debug])
-
-calls all the steps functions and when all done it calls the callback function.
-
-    process.nextTick(function (){ afunction.call(thisobject,arguments_if_any);});
-    
-also available inside the callback function:
-
-    this.results // array of all next arguments
-
-calls all the steps functions and when all done it calls the callback function.
-
-    process.nextTick(function (){ afunction.call(thisobject,arguments_if_any);});
-    
-also available inside the callback function:
-
-    this.results // array of all next arguments
-
-###function each(shared,items,each_function [,callback] [,debug])
-
- a for each function, it can have an object as input for items
-
-each_function: (as in Array.forEach callback)
-
-    inflow.each(
-    shared,
-    items,
-    function (value,key,array){;this();},
-    callback 
-    [,debug]);
-  
-example:
-
-    app.inflow.each(shared,[
-     {phone:'111111111234',name:'Simon'},
-     {phone:'222222221234',name:'Avi'}
-    ],function (val){
-     shared.res.write(val.phone+" - "+val.name+"\r\n");
-     this();
-    },function (){
-     shared.res.end('done');
-    });
-
-output:
-
-    111111111234 - Simon
-    222222221234 - Avi
-    done
-
-    /*
-     It seems to me that the shared object in Each() and in While() is useless.
-     tell me what you think.
-    */
-
-### function while(shared, loop_function [,callback] [,debug])
-async while with a shared object,
-the way you use this while is this, this while is basicaly while(true) and, you break it with a break statment.
-you can define the position of while condition, where you want it to be: at the begining or at the end. there you put a break statment.
-you should **use return**, when you call this.continue() or this.break() , otherwise it might **recurse back** to the function.
-
-additionaly in while you have:
-    this.break()=call_the_Callback,
-and
-    this.continue()=this.next();
-
-
-Async While - while with break at the begining:  
-
-    inflow.while({},function(){  
-     if(!( while_condition )) return this.break();
-     
-     // code here
-     if(break_condition    ) return this.break();
-     if(continue_condition ) return this.continue(); // this.continue=this.next, must use **return**, to exit the function;
-     // code here
- 
-     this.next();
-    },
-    function(){
-     console.log('// after while code here');
-    });
-   
-Async Do-While - while with break at the end:
-  
-    inflow.while({},function(){
-     // code here
-     if(!( while_condition )) return this.break();
-     this.next();
-    },
-    function(){
-     console.log('// after while code here');
-    });
-   
-While example inside a callback:
-    var n=0;
-    inflow.while({},function(){
-     if(!( n<5 )) return self.break();
-     console.log('// code here');
-     n++;
-     var self=this;
-     setTimeout(
-     function(){
-       console.log('// inner code here');
-       self.next();
-     },1000);
-    
-    },
-    function(){
-     console.log('// after while code here');
-    });
-
-**Bonus:** DIY toy Async While:
-
-    function callback()
-    {
-     console.log('done');
-    }
-    var i=1;
-    function whileloop(){
-     if(!(i<10)) return callback(); 
-     // code here
-     console.log("foo ");
-     i++;
-     return process.nextTick(function(){whileloop();});
-    }
-## Why use it
-
-The problem is that you have to carray the Request and Response,
-all the way, through the callbcacks and non-callbacks...
-just to be able to do Response.write() and Response.end() at the end.
-all the other simple functions dons't need request and response.
-but even then you must carry it to not loose it at the end. 
-
-in a large program you could loose the response variable somewhere,
-while doing the folowing in every single small or large sync or async function call:
-
-    function (error,data,req,res)
-    {
-     (function (error,data,req,ras) 
-     {
-      (function (error,data,req,res)
-      {
-       res.end('finally done');
-      })(error,data,req,res);
-     })(error,data,req,res);
-    }
-    // see if you can spot a typo in the code above.
-
-
-No more complicated closures
-
-* The shared object simplifies everything with async calls.
-
-Functions can have arguments
-
-* Now I can use a common library object that contains useful function that can be called asynchronously.
-* It simplified my application structure
-
-With this library I could reinvented the way I use an http server
-
-* No need to pass req, res as separate arguments, just one simple shared object.
-* I used to store temporary variables of the request in the req object but now i store them in the shared object.
-
-## Example:
-  
-    var http = require('http');
-    var app={lib:{}};
-    var app.lib.inflow = require('node-inflow');
-    var inflow = app.lib.inflow.flow; // optional
-    var inparallel = app.lib.inflow.parallel; // optional
-    
-    http.createServer(function (req, res)  {
-     var shared = { 
-                          'req':req, 
-                          'res':res, 
-                          'app':app, 
-                          'lib':app.lib
-                  };
-    
-     if(req.url.indexOf("surprise")!=-1)
-       inflow(shared,[
-                      [surprise, ["it can have arguments"]]
-                     ,
-                      render
-                     ]);
-     else
-       inflow(shared, [ helloworld , render ]);
-    
-    }).listen(8124);
-    
-    function helloworld() {
-      this.shared.text_to_show='Hello World!';
-      this.next();
-    };
-    
-    function render()  {
-      with(this.shared) // you can use it with a with statement   
-      {
-         res.writeHead(200, {'Content-Type': 'text/plain'}); 
-         res.end(this.shared.text_to_show);
-      }
-      this.next();
-    };
-        
-    function surprise(name) {
-     //i prefer to define what i will use:
-
-     var shared=this.shared,
-         req=shared.req,
-         app=shared.app;
-     
-     shared.text_to_show='Surprise ' + name ;
-
-     var self=this; // save the "this" for later usage.
-     setTimeout(function() {
-      self.next();
-     } , Math.ceil(Math.random()*5)*1000 ) ;
-     
-     // dependency injection example: // (it is here just for demonstartion)
-     //
-     //var lib=shared.lib;
-     //if(!lib.fs)lib.fs=require('fs'); 
-     //fs.stat('/tmp/myfile',...);
-    };
-    
-    console.log('Server running at http://127.0.0.1:8124/');    
-
-
-## How do we use node-inflow:
-
-a controllers in our program are objects with functions and a main function.
-node-inflow enabels us to seperate the main function to simple steps.
-
-    var page={
-     load_user:function () { // task 1
-      //
-      var shared=this.shared,app=shared.app,req=shared.req;
-      shared.user=app.models.getone({id:req.parsedurl.query.id});//{name:'someone',...}
-      this();
-     }
-     set_name:function () { // task 2
-      //
-      var shared=this.shared;
-      shared.name=(shared.user.name||"")+' is awsome'
-      this();
-     }
-     
-     mytempalte:app.templates.load('views/atemplate.html'), // some template
-     
-     main:function (shared){ // main function
-      var page=shared.page;
-      var common=shared.app.pages.common;
-      shared.view=page.my_template;
-      app.inflow.flow( shared, [page.load_user, page.set_name, common.render] ); // step though the tasks
-     }
-     
-    }
-    
-    // * our main functions not yet called by node-inflow, node-inflow is fresh, i'll convert to it later
-
-reference functions:
-
-    page.my_template=function (vars,callback)  // app.templates.load('views/atemplate.html')
-    {
-      echo='hello '+vars.name;
-      if(callback)callback(echo);else return echo;
-    },
-     
-    //a simplified function like the function that calls main. (just for reference)
-    app.route = function ()
-    {
-     // if route matches:
-     //{
-     shared.page=matched_page;
-     matched_page.main.call(matched_page,shared,app);
-     //}
-    }
-       
-    common.render = function () {
-     var shared = this.shared;
-     var page = shared.page;
-     var res = shared.res;
-     shared.header = (shared.header ? shared.header : {'Content-Type': 'text/html'});
-     shared.view.call(page, shared, function (echo) {
-      res.writeHead(200, shared.header);
-      res.write(echo);
-      res.end();
-     });
-    };
-
-also i have used:
-* inflow.each to implement sending message to a list and,
-* i will use inflow.while to send messges periodicaly.
-
-##Thanks to:
-
-Creationix - I used his concept for this library.
-
-Stagas - For help in enhancing examples in this readme.
-
-## The Idea
-
-The intended day to day usage is as described above in How to use.
-Unintentionly it is generalized into fubjs thing:
-
-Your application is composed from small parts To allow integration between all the parts.
-Each part must have a standard structure.
-
-Each function is a part composed from: 
-
- a function it self and
-
- a next() , call next() as a return value.

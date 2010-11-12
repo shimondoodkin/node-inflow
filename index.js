@@ -90,7 +90,52 @@ function flow(shared,steps,debug,   currentstep,args,called)
  }
  
 } this.flow=flow;
-
+/*
+function funcif(cond,func_t,func_f)
+{
+ var result=cond;
+ var next=function()
+ {
+  var next= function(result){ }; // this inside gonext so this does nothing
+  next.next=next;
+  next.shared=shared;
+  next.flow=self.flow;
+  next.parallel=self.parallel;
+  next.each=self.each;
+  next.results=results;
+  next.while=self.while;
+  if(result)
+  {
+   if(typeof func_t==='object' && func_t instanceof  Array)
+    func_t[0].apply(next, func_t[1]);
+   else
+    func_t.call(next,results);   
+  }
+  else
+  {
+   if(typeof func_f==='object' && func_f instanceof  Array)
+    func_f[0].apply(next, func_f[1]);
+   else
+    func_f.call(next,results); 
+  } 
+ };
+ next.next=next;
+ next.shared=shared;
+ next.flow=self.flow;
+ next.parallel=self.parallel;
+ next.each=self.each;
+ next.results=results;
+ next.while=self.while;
+ if(typeof cond=='function')
+ {
+  if(typeof func_t==='object' && func_t instanceof  Array)
+   func_t[0].apply(next, func_t[1]);
+  else
+   func_t.call(next,results);   
+  result=cond();
+ }
+}this.if=funcif;
+*/
 function is_argfunction(f)
 {
  if(f===null) return true;
@@ -114,7 +159,7 @@ function is_argfunction(f)
   )
  ) return true;
  return false; 
-}
+}this.is_argfunction=is_argfunction;
 
 function parallel(shared,steps,callback,debug,   currentstep,args)
 {
