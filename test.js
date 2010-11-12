@@ -181,6 +181,14 @@ console.log('\n no callback-while:\n');
 inflow.while(shared,get_while_function());
 setTimeout(this,100);
 }
+,
+inflow.if(true ,function (){console.log('\n if true  1\n');this();},function (){console.log('\n err if true  1\n');this();})
+,
+inflow.if(false,function (){console.log('\n err if false 1\n');this();},function (){console.log('\n if false 1\n');this();})
+,
+inflow.if(function (){this(true) },function (){console.log('\n if true  2\n');this();},function (){console.log('\n err if true  2\n');this();})
+,
+inflow.if(function (){this(false)},function (){console.log('\n err if false 2\n');this();},function (){console.log('\n if false 2\n');this();})
 
 ];
 

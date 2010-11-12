@@ -17,6 +17,43 @@ function debug_trace(message) // i usualy remember to turn debug variable off, i
 
 
 var self=this;
+
+function add_shortcuts(next)
+{
+ // aliases for next
+ next.next=next;
+ next.continue=next; 
+ next.return=next; 
+
+ next.flow=self.flow;
+  //aliases
+  next.seq=self.flow;
+  next.step=self.flow;
+  next.Step=self.flow;
+  next.serial=self.flow;
+ next.parallel=self.parallel;
+ next.each=self.each;
+ //aliases
+  next.foreach=self.each;
+  next.forEach=self.each;
+ next.while=self.while;
+ next.if=self.if;
+}
+
+function callfunc(func_t,args,next)
+{
+ if(func_t)
+ {
+  next.args=args;
+  if(typeof func_t==='object' && func_t instanceof  Array)
+   func_t[0].apply(next, func_t[1]);
+  else if(args && typeof args==='object' && args!==null && args.length>0)
+   func_t.call(next,args);
+  else
+   func_t.call(next);
+ }
+}
+
 // one simple function 
 function flow(shared,steps,debug,   currentstep,args,called)
 {
@@ -64,78 +101,45 @@ function flow(shared,steps,debug,   currentstep,args,called)
                         }
                        }
                       };
- next.next=next;
+ add_shortcuts(next);
  next.shared=shared;
  next.steps=steps;
  next.step=currentstep;
- next.flow=self.flow;
- next.parallel=self.parallel;
- next.each=self.each;
- next.while=self.while;
- next.args=args;
- if(typeof steps[currentstep]==='object' && steps[currentstep] instanceof  Array)
+ callfunc(steps[currentstep],args,next);
+
+} this.flow=flow;
+
+function funcif(condition,iftrue,iffalse)
+{
+ if(typeof condition=='boolean')
  {
-  steps[currentstep][0].apply( next,steps[currentstep][1]);
+  return condition?iftrue:iffalse;
  }
  else
  {
-  if(typeof args==='object' && args.length>0)
+  return function ()
   {
-   steps[currentstep].apply( next , args);
-  }
-  else
-  {
-   steps[currentstep].call( next );
-  }
- }
- 
-} this.flow=flow;
-/*
-function funcif(cond,func_t,func_f)
-{
- var result=cond;
- var next=function()
- {
-  var next= function(result){ }; // this inside gonext so this does nothing
-  next.next=next;
-  next.shared=shared;
-  next.flow=self.flow;
-  next.parallel=self.parallel;
-  next.each=self.each;
-  next.results=results;
-  next.while=self.while;
-  if(result)
-  {
-   if(typeof func_t==='object' && func_t instanceof  Array)
-    func_t[0].apply(next, func_t[1]);
-   else
-    func_t.call(next,results);   
-  }
-  else
-  {
-   if(typeof func_f==='object' && func_f instanceof  Array)
-    func_f[0].apply(next, func_f[1]);
-   else
-    func_f.call(next,results); 
-  } 
- };
- next.next=next;
- next.shared=shared;
- next.flow=self.flow;
- next.parallel=self.parallel;
- next.each=self.each;
- next.results=results;
- next.while=self.while;
- if(typeof cond=='function')
- {
-  if(typeof func_t==='object' && func_t instanceof  Array)
-   func_t[0].apply(next, func_t[1]);
-  else
-   func_t.call(next,results);   
-  result=cond();
+   var saved_next=this;
+   var saved_args=arguments;
+  
+   var next=function(result)
+   {
+    if(result)
+    {
+     callfunc(iftrue,saved_args,saved_next);
+    }
+    else
+    {
+     callfunc(iffalse,saved_args,saved_next);
+    }
+   };
+   add_shortcuts(next);
+   next.shared=saved_next.shared;
+   callfunc(condition,null,next);
+  }// end returned function
  }
 }this.if=funcif;
-*/
+
 function is_argfunction(f)
 {
  if(f===null) return true;
@@ -234,15 +238,11 @@ function parallel(shared,steps,callback,debug,   currentstep,args)
   if( callback_count == steps.length  )
   {
    var next= function(result){ }; // this inside gonext so this does nothing
-   next.next=next;
+   add_shortcuts(next);
    next.shared=shared;
    next.steps=steps;
    next.step=i;
-   next.flow=self.flow;
-   next.parallel=self.parallel;
-   next.each=self.each;
    next.results=results;
-   next.while=self.while;
    if(callback)
    {
     if(typeof callback==='object' && callback instanceof  Array)
@@ -267,14 +267,10 @@ function parallel(shared,steps,callback,debug,   currentstep,args)
  for(var i=0;i<steps.length;i++)
  {
   var next= function(result){ gonext(i,result); };
-  next.next=next;
+  add_shortcuts(next);
   next.shared=shared;
   next.steps=steps;
   next.step=i;
-  next.flow=self.flow;
-  next.parallel=self.parallel;
-  next.each=self.each;
-  next.while=self.while;
   next.args=[];
 
   if(typeof steps[currentstep]==='object' && steps[currentstep] instanceof  Array)
@@ -359,7 +355,7 @@ function each(shared,steps,each_function,callback,debug,   currentstep,args,
  
  if(!steps)steps=[];
  //console.log(require('sys').inspect(steps));
- if(typeof keys==='undefined')
+ if(keys===undefined)
  {
   if(typeof steps[currentstep]==='object' && steps[currentstep] instanceof  Array)
   {
@@ -383,31 +379,20 @@ function each(shared,steps,each_function,callback,debug,   currentstep,args,
  
  if(currentstep>=(keys?keys.length:steps.length))
  {
-   process.nextTick(function(){
+  process.nextTick(function()
+  {
    if(debug)  console.log(debug_trace("CALLBACK")); 
    
    var next= function(result){ }; // does nothing, its a last one
-   next.next=next;
+   add_shortcuts(next);
    next.shared=shared;
    next.steps=steps;
    next.step=currentstep;
-   next.flow=self.flow;
-   next.parallel=self.parallel;   
-   next.each=self.each;
-   next.while=self.while;
-   next.args=args;
    //next.results=results;
-   if(callback)
-   {
-    if(typeof callback==='object' && callback instanceof  Array)
-     callback[0].apply(next, callback[1]);
-    else
-     callback.call(next);
-   }
-   });
-   return;
+   callfunc(callback,args,next);
+  });
+  return;
  }
- 
  
  var key=keys?keys[currentstep]:currentstep;
  
@@ -433,14 +418,10 @@ function each(shared,steps,each_function,callback,debug,   currentstep,args,
                          }
                         }
                        };
-  next.next=next;
+  add_shortcuts(next);
   next.shared=shared;
   next.steps=steps;
   next.step=currentstep;
-  next.flow=self.flow;
-  next.parallel=self.parallel;
-  next.each=self.each;
-  next.while=self.while;
   next.args=args;
 
   next.keys=keys;
@@ -511,37 +492,23 @@ function loopwhile(shared,loop_function,callback,debug,  args,timer,currentstep,
                          }
                         }
                        };
-  next.next=next;
+  add_shortcuts(next);
   next.shared=shared;
   next.step=currentstep;
-  next.flow=self.flow;
-  next.parallel=self.parallel;
-  next.each=self.each;
-  next.while=self.while;
   next.args=args;
-  next.continue=next; // just for code visibility  so you can type "continue" ...
-  next.break=function(){
-   if(debug)  console.log(debug_trace("CALLBACK")); 
-   
-   var next= function(result){ }; // does nothing, its a last one
-   next.next=next;
-   next.shared=shared;
-   next.step=currentstep;
-   next.flow=self.flow;
-   next.parallel=self.parallel;   
-   next.each=self.each;
-   next.while=self.while;
-                        
-   if(typeof callback==='object' && callback instanceof  Array)
-    callback[0].apply(next, callback[1]);
-   else if(callback)
-    callback.call(next);
-  };
+  //next.continue=next; // just for code visibility  so you can type "continue" ...
+    next.break=function(){
+     if(debug)  console.log(debug_trace("CALLBACK")); 
+     var args=arguments;
+     var next= function(result){ }; // does nothing, its a last one
+     next.args=args;
+     add_shortcuts(next);
+     next.shared=shared;
+     next.step=currentstep;
+     callfunc(callback,args,next);
+   };
   
-  if(typeof loop_function==='object' && loop_function instanceof  Array)
-   loop_function[0].apply(next, callback[1]);
-  else
-   loop_function.call(next);
+  callfunc(loop_function,args,next);
   
 }this.while=loopwhile;
 
@@ -554,7 +521,6 @@ function loopwhile(shared,loop_function,callback,debug,  args,timer,currentstep,
 // }
 
 
-// function 
 
 /*
 
