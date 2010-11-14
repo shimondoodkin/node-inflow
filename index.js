@@ -48,7 +48,7 @@ function callfunc(func_t,args,next)
   if(typeof func_t==='object' && func_t instanceof  Array)
    func_t[0].apply(next, func_t[1]);
   else if(args && typeof args==='object' && args!==null && args.length>0)
-   func_t.call(next,args);
+   func_t.apply(next,args);
   else
    func_t.call(next);
  }
